@@ -1,0 +1,37 @@
+name: ${name}
+version: '${version}'
+main: com.iruanp.mcuniversaleconomy.MCUniversalEconomyPaper
+api-version: '1.20'
+authors: [iruanp]
+description: A universal economy solution that works seamlessly across both FabricMC and PaperMC servers
+depend: [Vault]
+softdepend: [LuckPerms]
+
+commands:
+  eco:
+    description: Economy management commands
+    usage: "§cUsage: /eco <balance|pay|give|take|set>"
+    aliases: [economy, money]
+  balance:
+    description: Check your balance or another player's balance
+    usage: "§cUsage: /balance [player]"
+    aliases: [bal, money]
+  pay:
+    description: Pay another player
+    usage: "§cUsage: /pay <player> <amount>"
+
+permissions:
+  mcuniversaleconomy.admin:
+    description: Allows access to all MCUniversalEconomy admin commands
+    default: op
+    children:
+      mcuniversaleconomy.use: true
+  mcuniversaleconomy.use:
+    description: Allows access to basic economy commands
+    default: true
+  mcuniversaleconomy.*:
+    description: Grants all MCUniversalEconomy permissions
+    default: op
+    children:
+      mcuniversaleconomy.admin: true
+      mcuniversaleconomy.use: true 

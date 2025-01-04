@@ -1,0 +1,28 @@
+{
+	"schemaVersion": 1,
+	"id": "${id}",
+	"version": "${version}",
+	"name": "${name}",
+	"icon": "assets/${id}/icon.png",
+	"description": "A universal economy solution that works seamlessly across both FabricMC and PaperMC servers",
+	"authors": [
+		"iruanp"
+	],
+	"contact": {
+		"sources": "https://github.com/iruanp/MCUniversalEconomy"
+	},
+	"license": "GPL-3.0",
+	"environment": "server",
+	"entrypoints": {
+		"main": [
+			"${group}.MCUniversalEconomyFabric"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.14.0",
+		"fabric": "*",
+		"minecraft": ">=1.20",
+		"java": ">=17",
+		"fabric-permissions-api-v0": "*"
+	}
+}

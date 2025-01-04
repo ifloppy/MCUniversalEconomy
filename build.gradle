@@ -1,0 +1,137 @@
+plugins {
+	id 'fabric-loom' version '1.9-SNAPSHOT'
+	id 'maven-publish'
+	id 'java'
+	id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+	archivesName = project.archives_base_name
+}
+
+repositories {
+	mavenCentral()
+	maven { url 'https://jitpack.io' }
+	maven { url 'https://repo.papermc.io/repository/maven-public/' }
+	maven { url 'https://repo.lucko.me/' }
+	maven { url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
+	maven { url 'https://repo.codemc.org/repository/maven-public' }
+	maven { url "https://maven.nucleoid.xyz/" }
+}
+
+configurations {
+	shade
+	implementation.extendsFrom(shade)
+}
+
+dependencies {
+	// Minecraft & Fabric
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+	// Fabric Permissions API
+	modImplementation 'me.lucko:fabric-permissions-api:0.3.1'
+
+	// Common Economy API (Fabric)
+	modImplementation 'eu.pb4:common-economy-api:1.1.1'
+
+	// Vault API (Paper)
+	compileOnly 'net.milkbowl.vault:VaultUnlockedAPI:2.9'
+
+	// Database
+	implementation 'com.zaxxer:HikariCP:6.2.1'
+	implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.1'
+
+	// YAML
+	implementation 'org.yaml:snakeyaml:2.2'
+
+	// Paper API
+	compileOnly 'io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT'
+}
+
+processResources {
+	inputs.property "version", project.version
+	inputs.property "name", project.archives_base_name
+	inputs.property "group", project.group
+
+	filesMatching(["fabric.mod.json", "plugin.yml", "paper-plugin.yml"]) {
+		expand(
+			version: project.version,
+			name: project.archives_base_name,
+			group: project.group,
+			id: project.archives_base_name.toLowerCase()
+		)
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 17
+	it.options.encoding = "UTF-8"
+}
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+}
+
+shadowJar {
+	mergeServiceFiles()
+	
+	configurations = [project.configurations.runtimeClasspath]
+	archiveClassifier.set('')
+	
+	
+	dependencies {
+		include(dependency('com.zaxxer:HikariCP'))
+		include(dependency('org.mariadb.jdbc:mariadb-java-client'))
+		include(dependency('org.yaml:snakeyaml'))
+	}
+
+	minimize{
+		exclude(dependency('org.mariadb.jdbc:.*:.*'))
+	}
+}
+
+remapJar {
+	dependsOn shadowJar
+	input.set shadowJar.archiveFile
+}
+
+jar {
+	from("LICENSE") {
+		rename { "${it}_${project.base.archivesName.get()}"}
+	}
+}
+
+// Configure build task dependencies
+tasks.build.dependsOn tasks.remapJar
+tasks.build.dependsOn tasks.shadowJar
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			artifact(shadowJar)
+			artifact(sourcesJar)
+			
+			artifactId = project.archives_base_name
+			
+			pom {
+				name = project.archives_base_name
+				description = 'A universal economy solution for both FabricMC and PaperMC servers'
+			}
+		}
+	}
+	
+	repositories {
+		maven {
+			name = "ProjectRepo"
+			url = layout.buildDirectory.dir("repo")
+		}
+	}
+}
