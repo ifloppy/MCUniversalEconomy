@@ -12,7 +12,7 @@ settings:
   initial_balance: 0.0
   currency_symbol: "$"
   currency_format: "#,##0.00"
-  language: en
+  language: en_US
   check_updates: true
   server_id: null  # Optional server identifier. Use String value
   

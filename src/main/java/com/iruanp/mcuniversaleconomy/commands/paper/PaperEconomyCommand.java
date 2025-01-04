@@ -3,6 +3,8 @@ package com.iruanp.mcuniversaleconomy.commands.paper;
 import com.iruanp.mcuniversaleconomy.MCUniversalEconomyPaper;
 import com.iruanp.mcuniversaleconomy.commands.EconomyCommand;
 import com.iruanp.mcuniversaleconomy.economy.UniversalEconomyService;
+import com.iruanp.mcuniversaleconomy.lang.LanguageManager;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,14 +19,16 @@ import java.util.UUID;
 public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
     private final MCUniversalEconomyPaper plugin;
     private final EconomyCommand economyCommand;
+    private final LanguageManager languageManager;
 
-    public PaperEconomyCommand(MCUniversalEconomyPaper plugin, UniversalEconomyService economyService) {
+    public PaperEconomyCommand(MCUniversalEconomyPaper plugin, UniversalEconomyService economyService, LanguageManager languageManager) {
         this.plugin = plugin;
-        this.economyCommand = new EconomyCommand(economyService);
+        this.economyCommand = new EconomyCommand(economyService, languageManager);
+        this.languageManager = languageManager;
     }
 
-    public static void register(MCUniversalEconomyPaper plugin, UniversalEconomyService economyService) {
-        PaperEconomyCommand command = new PaperEconomyCommand(plugin, economyService);
+    public static void register(MCUniversalEconomyPaper plugin, UniversalEconomyService economyService, LanguageManager languageManager) {
+        PaperEconomyCommand command = new PaperEconomyCommand(plugin, economyService, languageManager);
         
         // Register main command and its aliases
         plugin.getCommand("eco").setExecutor(command);
@@ -57,7 +61,7 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
 
         // Handle /eco commands
         if (args.length == 0) {
-            sender.sendMessage("§cUsage: /eco <balance|pay|give|take|set>");
+            sender.sendMessage(languageManager.getMessage("usage.eco"));
             return true;
         }
 
@@ -79,7 +83,7 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
                 handleSet(sender, args);
                 break;
             default:
-                sender.sendMessage("§cUnknown command. Use /eco <balance|pay|give|take|set>");
+                sender.sendMessage(languageManager.getMessage("usage.eco"));
         }
         return true;
     }
@@ -97,14 +101,14 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
         if (adjustedArgs.length > 0 && sender.hasPermission("mcuniversaleconomy.admin")) {
             Player target = Bukkit.getPlayer(adjustedArgs[0]);
             if (target == null) {
-                sender.sendMessage("§cPlayer not found");
+                sender.sendMessage(languageManager.getMessage("general.player_not_found"));
                 return;
             }
             targetUuid = target.getUniqueId();
         } else if (sender instanceof Player) {
             targetUuid = ((Player) sender).getUniqueId();
         } else {
-            sender.sendMessage("§cOnly players can check their balance");
+            sender.sendMessage(languageManager.getMessage("balance.console_error"));
             return;
         }
 
@@ -115,52 +119,51 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
 
     private void handlePay(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("§cOnly players can use this command");
+            sender.sendMessage(languageManager.getMessage("general.command_usage"));
             return;
         }
 
-        String[] adjustedArgs = args;
-        // If command is used as /eco pay player amount, we need to skip the first argument
-        if (args.length > 0 && args[0].equalsIgnoreCase("pay")) {
-            adjustedArgs = new String[args.length - 1];
-            System.arraycopy(args, 1, adjustedArgs, 0, args.length - 1);
-        }
-
-        if (adjustedArgs.length < 2) {
-            sender.sendMessage("§cUsage: /pay <player> <amount>");
+        if (args.length < 3) {
+            sender.sendMessage(languageManager.getMessage("usage.pay"));
             return;
         }
 
-        Player target = Bukkit.getPlayer(adjustedArgs[0]);
+        Player player = (Player) sender;
+        Player target = Bukkit.getPlayer(args[1]);
         if (target == null) {
-            sender.sendMessage("§cPlayer not found");
+            sender.sendMessage(languageManager.getMessage("general.player_not_found"));
+            return;
+        }
+
+        if (player.equals(target)) {
+            sender.sendMessage(languageManager.getMessage("pay.error.self_pay"));
             return;
         }
 
         try {
-            double amount = Double.parseDouble(adjustedArgs[1]);
-            economyCommand.pay(((Player) sender).getUniqueId(), target.getUniqueId(), amount)
+            double amount = Double.parseDouble(args[2]);
+            economyCommand.pay(player.getUniqueId(), target.getUniqueId(), amount)
                 .thenAccept(message -> Bukkit.getScheduler().runTask(plugin, () -> 
                     sender.sendMessage(message)));
         } catch (NumberFormatException e) {
-            sender.sendMessage("§cInvalid amount");
+            sender.sendMessage(languageManager.getMessage("general.invalid_amount"));
         }
     }
 
     private void handleGive(CommandSender sender, String[] args) {
         if (!sender.hasPermission("mcuniversaleconomy.admin")) {
-            sender.sendMessage("§cYou don't have permission to use this command");
+            sender.sendMessage(languageManager.getMessage("general.no_permission"));
             return;
         }
 
         if (args.length < 3) {
-            sender.sendMessage("§cUsage: /eco give <player> <amount>");
+            sender.sendMessage(languageManager.getMessage("usage.give"));
             return;
         }
 
         Player target = Bukkit.getPlayer(args[1]);
         if (target == null) {
-            sender.sendMessage("§cPlayer not found");
+            sender.sendMessage(languageManager.getMessage("general.player_not_found"));
             return;
         }
 
@@ -170,24 +173,24 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
                 .thenAccept(message -> Bukkit.getScheduler().runTask(plugin, () -> 
                     sender.sendMessage(message)));
         } catch (NumberFormatException e) {
-            sender.sendMessage("§cInvalid amount");
+            sender.sendMessage(languageManager.getMessage("general.invalid_amount"));
         }
     }
 
     private void handleTake(CommandSender sender, String[] args) {
         if (!sender.hasPermission("mcuniversaleconomy.admin")) {
-            sender.sendMessage("§cYou don't have permission to use this command");
+            sender.sendMessage(languageManager.getMessage("general.no_permission"));
             return;
         }
 
         if (args.length < 3) {
-            sender.sendMessage("§cUsage: /eco take <player> <amount>");
+            sender.sendMessage(languageManager.getMessage("usage.take"));
             return;
         }
 
         Player target = Bukkit.getPlayer(args[1]);
         if (target == null) {
-            sender.sendMessage("§cPlayer not found");
+            sender.sendMessage(languageManager.getMessage("general.player_not_found"));
             return;
         }
 
@@ -197,24 +200,24 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
                 .thenAccept(message -> Bukkit.getScheduler().runTask(plugin, () -> 
                     sender.sendMessage(message)));
         } catch (NumberFormatException e) {
-            sender.sendMessage("§cInvalid amount");
+            sender.sendMessage(languageManager.getMessage("general.invalid_amount"));
         }
     }
 
     private void handleSet(CommandSender sender, String[] args) {
         if (!sender.hasPermission("mcuniversaleconomy.admin")) {
-            sender.sendMessage("§cYou don't have permission to use this command");
+            sender.sendMessage(languageManager.getMessage("general.no_permission"));
             return;
         }
 
         if (args.length < 3) {
-            sender.sendMessage("§cUsage: /eco set <player> <amount>");
+            sender.sendMessage(languageManager.getMessage("usage.set"));
             return;
         }
 
         Player target = Bukkit.getPlayer(args[1]);
         if (target == null) {
-            sender.sendMessage("§cPlayer not found");
+            sender.sendMessage(languageManager.getMessage("general.player_not_found"));
             return;
         }
 
@@ -224,7 +227,7 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
                 .thenAccept(message -> Bukkit.getScheduler().runTask(plugin, () -> 
                     sender.sendMessage(message)));
         } catch (NumberFormatException e) {
-            sender.sendMessage("§cInvalid amount");
+            sender.sendMessage(languageManager.getMessage("general.invalid_amount"));
         }
     }
 

@@ -2,6 +2,7 @@ package com.iruanp.mcuniversaleconomy.commands.fabric;
 
 import com.iruanp.mcuniversaleconomy.commands.EconomyCommand;
 import com.iruanp.mcuniversaleconomy.economy.UniversalEconomyService;
+import com.iruanp.mcuniversaleconomy.lang.LanguageManager;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -18,13 +19,15 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class FabricEconomyCommand {
     private final EconomyCommand economyCommand;
+    private final LanguageManager languageManager;
 
-    public FabricEconomyCommand(UniversalEconomyService economyService) {
-        this.economyCommand = new EconomyCommand(economyService);
+    public FabricEconomyCommand(UniversalEconomyService economyService, LanguageManager languageManager) {
+        this.economyCommand = new EconomyCommand(economyService, languageManager);
+        this.languageManager = languageManager;
     }
 
-    public static void register(UniversalEconomyService economyService) {
-        FabricEconomyCommand command = new FabricEconomyCommand(economyService);
+    public static void register(UniversalEconomyService economyService, LanguageManager languageManager) {
+        FabricEconomyCommand command = new FabricEconomyCommand(economyService, languageManager);
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             // Main /eco command
             var ecoCommand = literal("eco")
@@ -98,7 +101,7 @@ public class FabricEconomyCommand {
     }
 
     private int showUsage(CommandContext<ServerCommandSource> ctx) {
-        ctx.getSource().sendMessage(Text.literal("§cUsage: /eco <balance|pay|give|take|set>"));
+        ctx.getSource().sendMessage(Text.literal(languageManager.getMessage("usage.eco")));
         return Command.SINGLE_SUCCESS;
     }
 
@@ -110,7 +113,7 @@ public class FabricEconomyCommand {
             try {
                 player = source.getPlayerOrThrow();
             } catch (Exception e) {
-                source.sendMessage(Text.literal("§cOnly players can check their balance"));
+                source.sendMessage(Text.literal(languageManager.getMessage("balance.console_error")));
                 return 0;
             }
         }
@@ -129,7 +132,7 @@ public class FabricEconomyCommand {
             double amount = DoubleArgumentType.getDouble(ctx, "amount");
 
             if (player.equals(target)) {
-                source.sendMessage(Text.literal("§cYou cannot pay yourself"));
+                source.sendMessage(Text.literal(languageManager.getMessage("pay.error.self_pay")));
                 return 0;
             }
 
@@ -138,7 +141,7 @@ public class FabricEconomyCommand {
 
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
-            source.sendMessage(Text.literal("§cOnly players can use this command"));
+            source.sendMessage(Text.literal(languageManager.getMessage("general.command_usage")));
             return 0;
         }
     }
@@ -154,7 +157,7 @@ public class FabricEconomyCommand {
 
             return Command.SINGLE_SUCCESS;
         } catch (CommandSyntaxException e) {
-            source.sendMessage(Text.literal("§cPlayer not found"));
+            source.sendMessage(Text.literal(languageManager.getMessage("general.player_not_found")));
             return 0;
         }
     }
@@ -170,7 +173,7 @@ public class FabricEconomyCommand {
 
             return Command.SINGLE_SUCCESS;
         } catch (CommandSyntaxException e) {
-            source.sendMessage(Text.literal("§cPlayer not found"));
+            source.sendMessage(Text.literal(languageManager.getMessage("general.player_not_found")));
             return 0;
         }
     }
@@ -186,7 +189,7 @@ public class FabricEconomyCommand {
 
             return Command.SINGLE_SUCCESS;
         } catch (CommandSyntaxException e) {
-            source.sendMessage(Text.literal("§cPlayer not found"));
+            source.sendMessage(Text.literal(languageManager.getMessage("general.player_not_found")));
             return 0;
         }
     }

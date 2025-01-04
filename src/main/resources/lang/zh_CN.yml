@@ -1,0 +1,40 @@
+messages:
+  balance:
+    success: "你的余额是 %s"
+    other_player: "%s 的余额是 %s"
+    console_error: "只有玩家可以查看余额"
+  pay:
+    error:
+      amount_positive: "金额必须为正数"
+      self_pay: "你不能给自己转账"
+    success: "成功支付 %s"
+    failed: "支付失败：%s"
+  give:
+    error:
+      amount_positive: "金额必须为正数"
+    success: "成功给予 %s"
+    failed: "给予金钱失败"
+  take:
+    error:
+      amount_positive: "金额必须为正数"
+    success: "成功扣除 %s"
+    failed: "扣除金钱失败"
+  set:
+    error:
+      amount_negative: "金额不能为负数"
+    success: "成功将余额设置为 %s"
+    failed: "设置余额失败"
+  general:
+    no_permission: "你没有权限使用此命令"
+    player_not_found: "找不到该玩家"
+    invalid_amount: "无效的金额"
+    command_usage: "命令用法错误"
+  usage:
+    eco: "用法：/eco <balance|pay|give|take|set>"
+    give: "用法：/eco give <玩家> <金额>"
+    take: "用法：/eco take <玩家> <金额>"
+    set: "用法：/eco set <玩家> <金额>"
+    pay: "用法：/eco pay <玩家> <金额>"
+  currency:
+    name_singular: "元"
+    name_plural: "元" 

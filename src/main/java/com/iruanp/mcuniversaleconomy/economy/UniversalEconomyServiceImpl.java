@@ -3,6 +3,7 @@ package com.iruanp.mcuniversaleconomy.economy;
 import com.iruanp.mcuniversaleconomy.config.ModConfig;
 import com.iruanp.mcuniversaleconomy.database.DatabaseManager;
 import com.iruanp.mcuniversaleconomy.util.UnifiedLogger;
+import com.iruanp.mcuniversaleconomy.lang.LanguageManager;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -17,12 +18,14 @@ public class UniversalEconomyServiceImpl implements UniversalEconomyService {
     private final UnifiedLogger logger;
     private final String prefix;
     private final ModConfig config;
+    private final LanguageManager languageManager;
 
-    public UniversalEconomyServiceImpl(DatabaseManager databaseManager, UnifiedLogger logger, ModConfig config) {
+    public UniversalEconomyServiceImpl(DatabaseManager databaseManager, UnifiedLogger logger, ModConfig config, LanguageManager languageManager) {
         this.databaseManager = databaseManager;
         this.logger = logger;
-        this.prefix = databaseManager.getPrefix();
+        this.prefix = config.getTablePrefix();
         this.config = config;
+        this.languageManager = languageManager;
     }
 
     @Override
@@ -317,17 +320,17 @@ public class UniversalEconomyServiceImpl implements UniversalEconomyService {
 
     @Override
     public String getCurrencyNameSingular() {
-        return "Dollar";
+        return languageManager.getMessage("currency.name_singular");
     }
 
     @Override
     public String getCurrencyNamePlural() {
-        return "Dollars";
+        return languageManager.getMessage("currency.name_plural");
     }
 
     @Override
     public String format(BigDecimal amount) {
-        return "$" + amount.setScale(2).toString();
+        return config.getCurrencySymbol() + amount.setScale(2).toString();
     }
 
     private void logError(String message, Exception e) {

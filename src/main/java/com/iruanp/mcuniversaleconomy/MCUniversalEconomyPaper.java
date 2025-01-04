@@ -6,6 +6,7 @@ import com.iruanp.mcuniversaleconomy.database.DatabaseManager;
 import com.iruanp.mcuniversaleconomy.economy.UniversalEconomyService;
 import com.iruanp.mcuniversaleconomy.economy.UniversalEconomyServiceImpl;
 import com.iruanp.mcuniversaleconomy.economy.paper.VaultEconomyProvider;
+import com.iruanp.mcuniversaleconomy.lang.LanguageManager;
 import com.iruanp.mcuniversaleconomy.util.UnifiedLogger;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.event.EventHandler;
@@ -14,28 +15,32 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
-
 public class MCUniversalEconomyPaper extends JavaPlugin implements Listener {
     private static ModConfig config;
     private static UniversalEconomyService economyService;
     private static DatabaseManager databaseManager;
+    private static LanguageManager languageManager;
+    private static UnifiedLogger logger;
 
     @Override
     public void onEnable() {
         // Initialize config
         config = new ModConfig();
-        config.setLogger(new UnifiedLogger(getLogger()));
+        logger = new UnifiedLogger(getLogger());
+        config.setLogger(logger);
         config.loadFromYaml(getDataFolder().toPath().resolve("config.yml"));
 
         // Initialize database
         databaseManager = new DatabaseManager(config);
 
+        // Initialize language manager
+        languageManager = new LanguageManager(getDataFolder(), config.getLanguage());
+
         // Initialize economy service
-        economyService = new UniversalEconomyServiceImpl(databaseManager, new UnifiedLogger(getLogger()), config);
+        economyService = new UniversalEconomyServiceImpl(databaseManager, logger, config, languageManager);
 
         // Register commands
-        PaperEconomyCommand.register(this, economyService);
+        PaperEconomyCommand.register(this, economyService, languageManager);
 
         // Register event listeners
         getServer().getPluginManager().registerEvents(this, this);

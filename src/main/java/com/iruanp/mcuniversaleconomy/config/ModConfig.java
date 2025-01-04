@@ -20,7 +20,7 @@ public class ModConfig {
     private double initialBalance = 0.0;
     private String currencySymbol = "$";
     private String currencyFormat = "#,##0.00";
-    private String language = "en";
+    private String language = "en_US";
     private boolean checkUpdates = true;
     private String serverId = null;  // Server identifier, null by default
 

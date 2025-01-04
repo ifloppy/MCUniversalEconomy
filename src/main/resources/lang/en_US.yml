@@ -1,0 +1,40 @@
+messages:
+  balance:
+    success: "Your balance is %s"
+    other_player: "%s's balance is %s"
+    console_error: "Only players can check their balance"
+  pay:
+    error:
+      amount_positive: "Amount must be positive"
+      self_pay: "You cannot pay yourself"
+    success: "Successfully paid %s"
+    failed: "Failed to make payment: %s"
+  give:
+    error:
+      amount_positive: "Amount must be positive"
+    success: "Successfully gave %s"
+    failed: "Failed to give money"
+  take:
+    error:
+      amount_positive: "Amount must be positive"
+    success: "Successfully took %s"
+    failed: "Failed to take money"
+  set:
+    error:
+      amount_negative: "Amount cannot be negative"
+    success: "Successfully set balance to %s"
+    failed: "Failed to set balance"
+  general:
+    no_permission: "You don't have permission to use this command"
+    player_not_found: "Player not found"
+    invalid_amount: "Invalid amount"
+    command_usage: "Invalid command usage"
+  usage:
+    eco: "Usage: /eco <balance|pay|give|take|set>"
+    give: "Usage: /eco give <player> <amount>"
+    take: "Usage: /eco take <player> <amount>"
+    set: "Usage: /eco set <player> <amount>"
+    pay: "Usage: /eco pay <player> <amount>"
+  currency:
+    name_singular: "Dollar"
+    name_plural: "Dollars" 
