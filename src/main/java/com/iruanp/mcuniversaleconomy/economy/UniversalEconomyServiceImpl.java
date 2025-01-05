@@ -334,7 +334,7 @@ public class UniversalEconomyServiceImpl implements UniversalEconomyService {
 
     @Override
     public String format(BigDecimal amount) {
-        return config.getCurrencySymbol() + amount.setScale(2).toString();
+        return amount.toPlainString() + " " + (amount.compareTo(BigDecimal.ONE) == 0 ? getCurrencyNameSingular() : getCurrencyNamePlural());
     }
 
     @Override
@@ -355,6 +355,25 @@ public class UniversalEconomyServiceImpl implements UniversalEconomyService {
                 return results;
             } catch (SQLException e) {
                 logError("Failed to get top balances", e);
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<UUID> getUuidByUsername(String username) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection conn = databaseManager.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT uuid FROM " + prefix + "accounts WHERE LOWER(username) = LOWER(?)")) {
+                stmt.setString(1, username);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    return UUID.fromString(rs.getString("uuid"));
+                }
+                return null;
+            } catch (SQLException e) {
+                logError("Failed to get UUID for username", e);
                 throw new RuntimeException(e);
             }
         });

@@ -64,4 +64,11 @@ public interface UniversalEconomyService {
      * Format the amount according to the currency format
      */
     String format(BigDecimal amount);
+
+    /**
+     * Get a player's UUID by their username
+     * @param username The player's username
+     * @return A CompletableFuture containing the player's UUID, or null if not found
+     */
+    CompletableFuture<UUID> getUuidByUsername(String username);
 } 

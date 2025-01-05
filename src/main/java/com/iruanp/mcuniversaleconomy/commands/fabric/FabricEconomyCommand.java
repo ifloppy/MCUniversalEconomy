@@ -5,14 +5,20 @@ import com.iruanp.mcuniversaleconomy.economy.UniversalEconomyService;
 import com.iruanp.mcuniversaleconomy.lang.LanguageManager;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+
+import java.util.Collection;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -20,10 +26,12 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class FabricEconomyCommand {
     private final EconomyCommand economyCommand;
     private final LanguageManager languageManager;
+    private final UniversalEconomyService economyService;
 
     public FabricEconomyCommand(UniversalEconomyService economyService, LanguageManager languageManager) {
         this.economyCommand = new EconomyCommand(economyService, languageManager);
         this.languageManager = languageManager;
+        this.economyService = economyService;
     }
 
     public static void register(UniversalEconomyService economyService, LanguageManager languageManager) {
@@ -35,9 +43,9 @@ public class FabricEconomyCommand {
                 .executes(command::showUsage)
                 .then(literal("balance")
                     .executes(ctx -> command.handleBalance(ctx, null))
-                    .then(argument("player", EntityArgumentType.player())
+                    .then(argument("player", GameProfileArgumentType.gameProfile())
                         .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                        .executes(ctx -> command.handleBalance(ctx, EntityArgumentType.getPlayer(ctx, "player")))
+                        .executes(ctx -> command.handleBalance(ctx, GameProfileArgumentType.getProfileArgument(ctx, "player")))
                     )
                 )
                 .then(literal("balancetop")
@@ -53,7 +61,7 @@ public class FabricEconomyCommand {
                 )
                 .then(literal("give")
                     .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .then(argument("player", EntityArgumentType.player())
+                    .then(argument("player", GameProfileArgumentType.gameProfile())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handleGive)
                         )
@@ -61,7 +69,7 @@ public class FabricEconomyCommand {
                 )
                 .then(literal("take")
                     .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .then(argument("player", EntityArgumentType.player())
+                    .then(argument("player", GameProfileArgumentType.gameProfile())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handleTake)
                         )
@@ -69,7 +77,7 @@ public class FabricEconomyCommand {
                 )
                 .then(literal("set")
                     .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .then(argument("player", EntityArgumentType.player())
+                    .then(argument("player", GameProfileArgumentType.gameProfile())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handleSet)
                         )
@@ -85,9 +93,9 @@ public class FabricEconomyCommand {
                 .executes(command::showUsage)
                 .then(literal("balance")
                     .executes(ctx -> command.handleBalance(ctx, null))
-                    .then(argument("player", EntityArgumentType.player())
+                    .then(argument("player", GameProfileArgumentType.gameProfile())
                         .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                        .executes(ctx -> command.handleBalance(ctx, EntityArgumentType.getPlayer(ctx, "player")))
+                        .executes(ctx -> command.handleBalance(ctx, GameProfileArgumentType.getProfileArgument(ctx, "player")))
                     )
                 )
                 .then(literal("balancetop")
@@ -103,7 +111,7 @@ public class FabricEconomyCommand {
                 )
                 .then(literal("give")
                     .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .then(argument("player", EntityArgumentType.player())
+                    .then(argument("player", GameProfileArgumentType.gameProfile())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handleGive)
                         )
@@ -111,7 +119,7 @@ public class FabricEconomyCommand {
                 )
                 .then(literal("take")
                     .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .then(argument("player", EntityArgumentType.player())
+                    .then(argument("player", GameProfileArgumentType.gameProfile())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handleTake)
                         )
@@ -119,7 +127,7 @@ public class FabricEconomyCommand {
                 )
                 .then(literal("set")
                     .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .then(argument("player", EntityArgumentType.player())
+                    .then(argument("player", GameProfileArgumentType.gameProfile())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handleSet)
                         )
@@ -132,9 +140,9 @@ public class FabricEconomyCommand {
                 .executes(command::showUsage)
                 .then(literal("balance")
                     .executes(ctx -> command.handleBalance(ctx, null))
-                    .then(argument("player", EntityArgumentType.player())
+                    .then(argument("player", GameProfileArgumentType.gameProfile())
                         .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                        .executes(ctx -> command.handleBalance(ctx, EntityArgumentType.getPlayer(ctx, "player")))
+                        .executes(ctx -> command.handleBalance(ctx, GameProfileArgumentType.getProfileArgument(ctx, "player")))
                     )
                 )
                 .then(literal("balancetop")
@@ -150,7 +158,7 @@ public class FabricEconomyCommand {
                 )
                 .then(literal("give")
                     .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .then(argument("player", EntityArgumentType.player())
+                    .then(argument("player", GameProfileArgumentType.gameProfile())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handleGive)
                         )
@@ -158,7 +166,7 @@ public class FabricEconomyCommand {
                 )
                 .then(literal("take")
                     .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .then(argument("player", EntityArgumentType.player())
+                    .then(argument("player", GameProfileArgumentType.gameProfile())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handleTake)
                         )
@@ -166,7 +174,7 @@ public class FabricEconomyCommand {
                 )
                 .then(literal("set")
                     .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .then(argument("player", EntityArgumentType.player())
+                    .then(argument("player", GameProfileArgumentType.gameProfile())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handleSet)
                         )
@@ -178,9 +186,9 @@ public class FabricEconomyCommand {
             var balanceCommand = literal("balance")
                 .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
                 .executes(ctx -> command.handleBalance(ctx, null))
-                .then(argument("player", EntityArgumentType.player())
+                .then(argument("player", GameProfileArgumentType.gameProfile())
                 .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .executes(ctx -> command.handleBalance(ctx, EntityArgumentType.getPlayer(ctx, "player")))
+                    .executes(ctx -> command.handleBalance(ctx, GameProfileArgumentType.getProfileArgument(ctx, "player")))
                 );
             dispatcher.register(balanceCommand);
             
@@ -188,9 +196,9 @@ public class FabricEconomyCommand {
             var balAlias = literal("bal")
                 .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
                 .executes(ctx -> command.handleBalance(ctx, null))
-                .then(argument("player", EntityArgumentType.player())
+                .then(argument("player", GameProfileArgumentType.gameProfile())
                 .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .executes(ctx -> command.handleBalance(ctx, EntityArgumentType.getPlayer(ctx, "player")))
+                    .executes(ctx -> command.handleBalance(ctx, GameProfileArgumentType.getProfileArgument(ctx, "player")))
                 );
             dispatcher.register(balAlias);
 
@@ -223,21 +231,23 @@ public class FabricEconomyCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private int handleBalance(CommandContext<ServerCommandSource> ctx, ServerPlayerEntity target) {
+    private int handleBalance(CommandContext<ServerCommandSource> ctx, Collection<com.mojang.authlib.GameProfile> targets) {
         ServerCommandSource source = ctx.getSource();
-        ServerPlayerEntity player = target;
 
-        if (player == null) {
+        if (targets == null || targets.isEmpty()) {
             try {
-                player = source.getPlayerOrThrow();
+                ServerPlayerEntity player = source.getPlayerOrThrow();
+                economyCommand.balance(player.getUuid())
+                    .thenAccept(message -> source.sendMessage(Text.literal(message)));
             } catch (Exception e) {
                 source.sendMessage(Text.literal(languageManager.getMessage("balance.console_error")));
                 return 0;
             }
+        } else {
+            com.mojang.authlib.GameProfile target = targets.iterator().next();
+            economyCommand.balance(target.getId())
+                .thenAccept(message -> source.sendMessage(Text.literal(message)));
         }
-
-        economyCommand.balance(player.getUuid())
-            .thenAccept(message -> source.sendMessage(Text.literal(message)));
 
         return Command.SINGLE_SUCCESS;
     }
@@ -246,16 +256,39 @@ public class FabricEconomyCommand {
         ServerCommandSource source = ctx.getSource();
         try {
             ServerPlayerEntity player = source.getPlayerOrThrow();
-            ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "player");
-            double amount = DoubleArgumentType.getDouble(ctx, "amount");
-
-            if (player.equals(target)) {
-                source.sendMessage(Text.literal(languageManager.getMessage("pay.error.self_pay")));
-                return 0;
+            String targetName;
+            try {
+                // Try to get online player first
+                ServerPlayerEntity onlineTarget = EntityArgumentType.getPlayer(ctx, "player");
+                if (player.equals(onlineTarget)) {
+                    source.sendMessage(Text.literal(languageManager.getMessage("pay.error.self_pay")));
+                    return 0;
+                }
+                economyCommand.pay(player.getUuid(), onlineTarget.getUuid(), DoubleArgumentType.getDouble(ctx, "amount"))
+                    .thenAccept(message -> source.sendMessage(Text.literal(message)));
+                return Command.SINGLE_SUCCESS;
+            } catch (CommandSyntaxException e) {
+                // If online player not found, try to get the name from the failed argument
+                targetName = ctx.getInput().split(" ")[2]; // Get the name from command input
             }
 
-            economyCommand.pay(player.getUuid(), target.getUuid(), amount)
-                .thenAccept(message -> source.sendMessage(Text.literal(message)));
+            // If we reach here, try offline player lookup
+            double amount = DoubleArgumentType.getDouble(ctx, "amount");
+            economyService.getUuidByUsername(targetName)
+                .thenCompose(targetUuid -> {
+                    if (targetUuid == null) {
+                        source.sendMessage(Text.literal(languageManager.getMessage("general.player_not_found")));
+                        return CompletableFuture.completedFuture(null);
+                    }
+
+                    if (player.getUuid().equals(targetUuid)) {
+                        source.sendMessage(Text.literal(languageManager.getMessage("pay.error.self_pay")));
+                        return CompletableFuture.completedFuture(null);
+                    }
+
+                    return economyCommand.pay(player.getUuid(), targetUuid, amount)
+                        .thenAccept(message -> source.sendMessage(Text.literal(message)));
+                });
 
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
@@ -267,10 +300,15 @@ public class FabricEconomyCommand {
     private int handleGive(CommandContext<ServerCommandSource> ctx) {
         ServerCommandSource source = ctx.getSource();
         try {
-            ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "player");
+            Collection<com.mojang.authlib.GameProfile> targets = GameProfileArgumentType.getProfileArgument(ctx, "player");
+            if (targets.isEmpty()) {
+                source.sendMessage(Text.literal(languageManager.getMessage("general.player_not_found")));
+                return 0;
+            }
+            com.mojang.authlib.GameProfile target = targets.iterator().next();
             double amount = DoubleArgumentType.getDouble(ctx, "amount");
 
-            economyCommand.give(target.getUuid(), amount)
+            economyCommand.give(target.getId(), amount)
                 .thenAccept(message -> source.sendMessage(Text.literal(message)));
 
             return Command.SINGLE_SUCCESS;
@@ -283,10 +321,15 @@ public class FabricEconomyCommand {
     private int handleTake(CommandContext<ServerCommandSource> ctx) {
         ServerCommandSource source = ctx.getSource();
         try {
-            ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "player");
+            Collection<com.mojang.authlib.GameProfile> targets = GameProfileArgumentType.getProfileArgument(ctx, "player");
+            if (targets.isEmpty()) {
+                source.sendMessage(Text.literal(languageManager.getMessage("general.player_not_found")));
+                return 0;
+            }
+            com.mojang.authlib.GameProfile target = targets.iterator().next();
             double amount = DoubleArgumentType.getDouble(ctx, "amount");
 
-            economyCommand.take(target.getUuid(), amount)
+            economyCommand.take(target.getId(), amount)
                 .thenAccept(message -> source.sendMessage(Text.literal(message)));
 
             return Command.SINGLE_SUCCESS;
@@ -299,10 +342,15 @@ public class FabricEconomyCommand {
     private int handleSet(CommandContext<ServerCommandSource> ctx) {
         ServerCommandSource source = ctx.getSource();
         try {
-            ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "player");
+            Collection<com.mojang.authlib.GameProfile> targets = GameProfileArgumentType.getProfileArgument(ctx, "player");
+            if (targets.isEmpty()) {
+                source.sendMessage(Text.literal(languageManager.getMessage("general.player_not_found")));
+                return 0;
+            }
+            com.mojang.authlib.GameProfile target = targets.iterator().next();
             double amount = DoubleArgumentType.getDouble(ctx, "amount");
 
-            economyCommand.set(target.getUuid(), amount)
+            economyCommand.set(target.getId(), amount)
                 .thenAccept(message -> source.sendMessage(Text.literal(message)));
 
             return Command.SINGLE_SUCCESS;
