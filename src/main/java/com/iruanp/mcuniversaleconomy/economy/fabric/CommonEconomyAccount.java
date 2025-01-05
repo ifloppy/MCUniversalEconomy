@@ -18,6 +18,7 @@ public class CommonEconomyAccount implements EconomyAccount {
     private final EconomyCurrency currency;
     private final EconomyProvider provider;
     private final Identifier id;
+    private final CommonEconomyCurrency commonCurrency;
 
     public CommonEconomyAccount(UniversalEconomyService economyService, UUID playerUuid, String playerName, EconomyCurrency currency, EconomyProvider provider, Identifier id) {
         this.economyService = economyService;
@@ -26,6 +27,7 @@ public class CommonEconomyAccount implements EconomyAccount {
         this.currency = currency;
         this.provider = provider;
         this.id = id;
+        this.commonCurrency = (CommonEconomyCurrency) currency;
     }
 
     @Override
@@ -45,12 +47,15 @@ public class CommonEconomyAccount implements EconomyAccount {
 
     @Override
     public long balance() {
-        return economyService.getBalance(playerUuid).join().longValue();
+        BigDecimal balance = economyService.getBalance(playerUuid).join();
+        return balance.multiply(BigDecimal.valueOf(commonCurrency.getDecimalMultiplier())).longValue();
     }
 
     @Override
     public void setBalance(long value) {
-        economyService.setBalance(playerUuid, BigDecimal.valueOf(value));
+        BigDecimal decimalValue = BigDecimal.valueOf(value)
+            .divide(BigDecimal.valueOf(commonCurrency.getDecimalMultiplier()));
+        economyService.setBalance(playerUuid, decimalValue);
     }
 
     @Override
