@@ -57,6 +57,10 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
             case "pay":
                 handlePay(sender, args);
                 return true;
+            case "balancetop":
+            case "baltop":
+                handleBalanceTop(sender);
+                return true;
         }
 
         // Handle /eco commands
@@ -81,6 +85,10 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
                 break;
             case "set":
                 handleSet(sender, args);
+                break;
+            case "balancetop":
+            case "baltop":
+                handleBalanceTop(sender);
                 break;
             default:
                 sender.sendMessage(languageManager.getMessage("usage.eco"));
@@ -231,12 +239,23 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
         }
     }
 
+    private void handleBalanceTop(CommandSender sender) {
+        if (!sender.hasPermission("mcuniversaleconomy.admin")) {
+            sender.sendMessage(languageManager.getMessage("general.no_permission"));
+            return;
+        }
+        economyCommand.balanceTop(10)
+            .thenAccept(message -> Bukkit.getScheduler().runTask(plugin, () -> 
+                sender.sendMessage(message.split("\n"))));
+    }
+
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> completions = new ArrayList<>();
         
         if (args.length == 1) {
             completions.add("balance");
+            completions.add("balancetop");
             completions.add("pay");
             if (sender.hasPermission("mcuniversaleconomy.admin")) {
                 completions.add("give");

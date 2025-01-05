@@ -3,6 +3,7 @@ messages:
     success: "Your balance is %s"
     other_player: "%s's balance is %s"
     console_error: "Only players can check their balance"
+    top_title: "===== Top Balance Rankings ====="
   pay:
     error:
       amount_positive: "Amount must be positive"

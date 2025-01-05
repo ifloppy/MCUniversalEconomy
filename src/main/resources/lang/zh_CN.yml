@@ -3,6 +3,7 @@ messages:
     success: "你的余额是 %s"
     other_player: "%s 的余额是 %s"
     console_error: "只有玩家可以查看余额"
+    top_title: "===== 余额排行榜 ====="
   pay:
     error:
       amount_positive: "金额必须为正数"
@@ -30,7 +31,7 @@ messages:
     invalid_amount: "无效的金额"
     command_usage: "命令用法错误"
   usage:
-    eco: "用法：/eco <balance|pay|give|take|set>"
+    eco: "用法：/eco <balance|pay|give|take|set|balancetop>"
     give: "用法：/eco give <玩家> <金额>"
     take: "用法：/eco take <玩家> <金额>"
     set: "用法：/eco set <玩家> <金额>"

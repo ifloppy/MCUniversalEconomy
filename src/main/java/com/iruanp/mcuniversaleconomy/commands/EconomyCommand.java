@@ -6,6 +6,7 @@ import com.iruanp.mcuniversaleconomy.lang.LanguageManager;
 import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.Map;
 
 public class EconomyCommand {
     private final UniversalEconomyService economyService;
@@ -19,6 +20,23 @@ public class EconomyCommand {
     public CompletableFuture<String> balance(UUID playerUuid) {
         return economyService.getBalance(playerUuid)
             .thenApply(balance -> languageManager.getMessage("balance.success", economyService.format(balance)));
+    }
+
+    public CompletableFuture<String> balanceTop(int limit) {
+        return economyService.getTopBalances(limit)
+            .thenApply(topBalances -> {
+                StringBuilder message = new StringBuilder();
+                message.append(languageManager.getMessage("balance.top_title")).append("\n");
+                int rank = 1;
+                for (Map.Entry<String, BigDecimal> entry : topBalances) {
+                    String formattedBalance = economyService.format(entry.getValue());
+                    message.append(String.format("#%d. %s - %s\n", 
+                        rank++, 
+                        entry.getKey(), 
+                        formattedBalance));
+                }
+                return message.toString().trim();
+            });
     }
 
     public CompletableFuture<String> pay(UUID sourceUuid, UUID targetUuid, double amount) {

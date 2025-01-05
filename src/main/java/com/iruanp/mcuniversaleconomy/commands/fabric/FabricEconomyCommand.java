@@ -31,14 +31,18 @@ public class FabricEconomyCommand {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             // Main /eco command
             var ecoCommand = literal("eco")
-                .requires(source -> Permissions.check(source, "mcuniversaleconomy.use", true))
+                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
                 .executes(command::showUsage)
                 .then(literal("balance")
                     .executes(ctx -> command.handleBalance(ctx, null))
                     .then(argument("player", EntityArgumentType.player())
-                        .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
                         .executes(ctx -> command.handleBalance(ctx, EntityArgumentType.getPlayer(ctx, "player")))
                     )
+                )
+                .then(literal("balancetop")
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .executes(command::handleBalanceTop)
                 )
                 .then(literal("pay")
                     .then(argument("player", EntityArgumentType.player())
@@ -48,7 +52,7 @@ public class FabricEconomyCommand {
                     )
                 )
                 .then(literal("give")
-                    .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
                     .then(argument("player", EntityArgumentType.player())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handleGive)
@@ -56,7 +60,7 @@ public class FabricEconomyCommand {
                     )
                 )
                 .then(literal("take")
-                    .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
                     .then(argument("player", EntityArgumentType.player())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handleTake)
@@ -64,7 +68,7 @@ public class FabricEconomyCommand {
                     )
                 )
                 .then(literal("set")
-                    .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
                     .then(argument("player", EntityArgumentType.player())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handleSet)
@@ -77,14 +81,18 @@ public class FabricEconomyCommand {
             
             // Register economy and money as direct aliases
             var economyCommand = literal("economy")
-                .requires(source -> Permissions.check(source, "mcuniversaleconomy.use", true))
+                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
                 .executes(command::showUsage)
                 .then(literal("balance")
                     .executes(ctx -> command.handleBalance(ctx, null))
                     .then(argument("player", EntityArgumentType.player())
-                        .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
                         .executes(ctx -> command.handleBalance(ctx, EntityArgumentType.getPlayer(ctx, "player")))
                     )
+                )
+                .then(literal("balancetop")
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .executes(command::handleBalanceTop)
                 )
                 .then(literal("pay")
                     .then(argument("player", EntityArgumentType.player())
@@ -94,7 +102,7 @@ public class FabricEconomyCommand {
                     )
                 )
                 .then(literal("give")
-                    .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
                     .then(argument("player", EntityArgumentType.player())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handleGive)
@@ -102,7 +110,7 @@ public class FabricEconomyCommand {
                     )
                 )
                 .then(literal("take")
-                    .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
                     .then(argument("player", EntityArgumentType.player())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handleTake)
@@ -110,7 +118,7 @@ public class FabricEconomyCommand {
                     )
                 )
                 .then(literal("set")
-                    .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
                     .then(argument("player", EntityArgumentType.player())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handleSet)
@@ -120,14 +128,18 @@ public class FabricEconomyCommand {
             dispatcher.register(economyCommand);
 
             var moneyCommand = literal("money")
-                .requires(source -> Permissions.check(source, "mcuniversaleconomy.use", true))
+                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
                 .executes(command::showUsage)
                 .then(literal("balance")
                     .executes(ctx -> command.handleBalance(ctx, null))
                     .then(argument("player", EntityArgumentType.player())
-                        .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
                         .executes(ctx -> command.handleBalance(ctx, EntityArgumentType.getPlayer(ctx, "player")))
                     )
+                )
+                .then(literal("balancetop")
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .executes(command::handleBalanceTop)
                 )
                 .then(literal("pay")
                     .then(argument("player", EntityArgumentType.player())
@@ -137,7 +149,7 @@ public class FabricEconomyCommand {
                     )
                 )
                 .then(literal("give")
-                    .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
                     .then(argument("player", EntityArgumentType.player())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handleGive)
@@ -145,7 +157,7 @@ public class FabricEconomyCommand {
                     )
                 )
                 .then(literal("take")
-                    .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
                     .then(argument("player", EntityArgumentType.player())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handleTake)
@@ -153,7 +165,7 @@ public class FabricEconomyCommand {
                     )
                 )
                 .then(literal("set")
-                    .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
                     .then(argument("player", EntityArgumentType.player())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handleSet)
@@ -164,33 +176,45 @@ public class FabricEconomyCommand {
 
             // Register balance command aliases
             var balanceCommand = literal("balance")
-                .requires(source -> Permissions.check(source, "mcuniversaleconomy.use", true))
+                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
                 .executes(ctx -> command.handleBalance(ctx, null))
                 .then(argument("player", EntityArgumentType.player())
-                    .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
                     .executes(ctx -> command.handleBalance(ctx, EntityArgumentType.getPlayer(ctx, "player")))
                 );
             dispatcher.register(balanceCommand);
             
             // Register 'bal' as a separate command with the same implementation
             var balAlias = literal("bal")
-                .requires(source -> Permissions.check(source, "mcuniversaleconomy.use", true))
+                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
                 .executes(ctx -> command.handleBalance(ctx, null))
                 .then(argument("player", EntityArgumentType.player())
-                    .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
                     .executes(ctx -> command.handleBalance(ctx, EntityArgumentType.getPlayer(ctx, "player")))
                 );
             dispatcher.register(balAlias);
 
             // Register pay command alias
             var payCommand = literal("pay")
-                .requires(source -> Permissions.check(source, "mcuniversaleconomy.use", true))
+                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
                 .then(argument("player", EntityArgumentType.player())
                     .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                         .executes(command::handlePay)
                     )
                 );
             dispatcher.register(payCommand);
+
+            // Register balancetop command alias
+            var balanceTopCommand = literal("balancetop")
+                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                .executes(command::handleBalanceTop);
+            dispatcher.register(balanceTopCommand);
+            
+            // Register 'baltop' as a separate command with the same implementation
+            var balTopAlias = literal("baltop")
+                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                .executes(command::handleBalanceTop);
+            dispatcher.register(balTopAlias);
         });
     }
 
@@ -286,5 +310,12 @@ public class FabricEconomyCommand {
             source.sendMessage(Text.literal(languageManager.getMessage("general.player_not_found")));
             return 0;
         }
+    }
+
+    private int handleBalanceTop(CommandContext<ServerCommandSource> ctx) {
+        ServerCommandSource source = ctx.getSource();
+        economyCommand.balanceTop(10)
+            .thenAccept(message -> source.sendFeedback(() -> Text.literal(message), false));
+        return Command.SINGLE_SUCCESS;
     }
 } 

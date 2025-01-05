@@ -3,6 +3,8 @@ package com.iruanp.mcuniversaleconomy.economy;
 import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.List;
+import java.util.Map;
 
 public interface UniversalEconomyService {
     /**
@@ -50,6 +52,13 @@ public interface UniversalEconomyService {
      * Get the currency's name (plural)
      */
     String getCurrencyNamePlural();
+
+    /**
+     * Get the top balances with player names
+     * @param limit The maximum number of entries to return
+     * @return A CompletableFuture containing a list of entries with player names and balances
+     */
+    CompletableFuture<List<Map.Entry<String, BigDecimal>>> getTopBalances(int limit);
 
     /**
      * Format the amount according to the currency format

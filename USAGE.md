@@ -15,6 +15,8 @@ You can also use shorter aliases for common commands:
 - `/eco give <player> <amount>` - Give money to a player
 - `/eco take <player> <amount>` - Take money from a player
 - `/eco set <player> <amount>` - Set a player's balance
+- `/eco balancetop` - View the richest players
+  - Alias: `/baltop`
 
 ## Permissions
 
@@ -33,6 +35,7 @@ You can also use shorter aliases for common commands:
     - Giving money to players
     - Taking money from players
     - Setting player balances
+    - Viewing balance top list
   - Automatically includes all user permissions
 
 ### Permission Groups
@@ -55,7 +58,14 @@ You can also use shorter aliases for common commands:
 /pay player1 100     # Short alias for payment
 ```
 
-3. Admin Commands
+3. View Top Balances
+```
+/eco balancetop     # View the richest players
+/balancetop         # Short alias for balance top
+/baltop             # Another alias for balance top
+```
+
+4. Admin Commands
 ```
 /eco give player1 1000   # Give 1000 to player1
 /eco take player1 500    # Take 500 from player1

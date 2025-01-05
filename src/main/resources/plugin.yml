@@ -10,7 +10,7 @@ softdepend: [LuckPerms]
 commands:
   eco:
     description: Economy management commands
-    usage: "§cUsage: /eco <balance|pay|give|take|set>"
+    usage: "§cUsage: /eco <balance|pay|give|take|set|balancetop>"
     aliases: [economy, money]
   balance:
     description: Check your balance or another player's balance
@@ -19,6 +19,11 @@ commands:
   pay:
     description: Pay another player
     usage: "§cUsage: /pay <player> <amount>"
+  balancetop:
+    description: View the richest players
+    usage: "§cUsage: /balancetop"
+    aliases: [baltop]
+    permission: mcuniversaleconomy.admin
 
 permissions:
   mcuniversaleconomy.admin:

@@ -12,6 +12,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.List;
+import java.util.Map;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 
 public class UniversalEconomyServiceImpl implements UniversalEconomyService {
     private final DatabaseManager databaseManager;
@@ -331,6 +335,29 @@ public class UniversalEconomyServiceImpl implements UniversalEconomyService {
     @Override
     public String format(BigDecimal amount) {
         return config.getCurrencySymbol() + amount.setScale(2).toString();
+    }
+
+    @Override
+    public CompletableFuture<List<Map.Entry<String, BigDecimal>>> getTopBalances(int limit) {
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection conn = databaseManager.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT username, balance FROM " + prefix + "accounts ORDER BY balance DESC LIMIT ?")) {
+                stmt.setInt(1, limit);
+                ResultSet rs = stmt.executeQuery();
+                List<Map.Entry<String, BigDecimal>> results = new ArrayList<>();
+                while (rs.next()) {
+                    results.add(new AbstractMap.SimpleEntry<>(
+                        rs.getString("username"),
+                        rs.getBigDecimal("balance")
+                    ));
+                }
+                return results;
+            } catch (SQLException e) {
+                logError("Failed to get top balances", e);
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     private void logError(String message, Exception e) {
