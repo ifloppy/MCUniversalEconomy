@@ -1,6 +1,7 @@
 package com.iruanp.mcuniversaleconomy.economy.fabric;
 
 import com.iruanp.mcuniversaleconomy.economy.UniversalEconomyService;
+import com.iruanp.mcuniversaleconomy.config.ModConfig;
 import com.mojang.authlib.GameProfile;
 import eu.pb4.common.economy.api.EconomyAccount;
 import eu.pb4.common.economy.api.EconomyCurrency;
@@ -9,6 +10,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -17,10 +20,12 @@ import java.util.Collections;
 public class CommonEconomyProvider implements EconomyProvider {
     private final UniversalEconomyService economyService;
     private final EconomyCurrency currency;
+    private final ModConfig config;
 
-    public CommonEconomyProvider(UniversalEconomyService economyService) {
+    public CommonEconomyProvider(UniversalEconomyService economyService, ModConfig config) {
         this.economyService = economyService;
-        this.currency = new CommonEconomyCurrency(this);
+        this.config = config;
+        this.currency = new CommonEconomyCurrency(this, config);
     }
 
     @Override
@@ -32,7 +37,7 @@ public class CommonEconomyProvider implements EconomyProvider {
     @Nullable
     public EconomyAccount getAccount(MinecraftServer server, GameProfile profile, String account) {
         return new CommonEconomyAccount(economyService, profile.getId(), profile.getName(), this.currency, this, 
-            new net.minecraft.util.Identifier("mcuniversaleconomy", account));
+            Identifier.of("mcuniversaleconomy", account));
     }
 
     @Override

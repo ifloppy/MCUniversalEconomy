@@ -6,22 +6,25 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import com.iruanp.mcuniversaleconomy.config.ModConfig;
 
 public class CommonEconomyCurrency implements EconomyCurrency {
     private final EconomyProvider provider;
+    private final ModConfig config;
 
-    public CommonEconomyCurrency(EconomyProvider provider) {
+    public CommonEconomyCurrency(EconomyProvider provider, ModConfig config) {
         this.provider = provider;
+        this.config = config;
     }
 
     @Override
     public Text name() {
-        return Text.literal("Coin");
+        return Text.literal("default_currency");
     }
 
     @Override
     public Identifier id() {
-        return new Identifier(provider.id(), "coin");
+        return new Identifier(provider.id(), "default_currency");
     }
 
     @Override
@@ -29,7 +32,7 @@ public class CommonEconomyCurrency implements EconomyCurrency {
         if (precise) {
             return String.valueOf(value);
         }
-        return value + " Coin" + (value == 1 ? "" : "s");
+        return config.getCurrencySymbol() + value;
     }
 
     @Override

@@ -5,9 +5,11 @@ import com.iruanp.mcuniversaleconomy.config.ModConfig;
 import com.iruanp.mcuniversaleconomy.database.DatabaseManager;
 import com.iruanp.mcuniversaleconomy.economy.UniversalEconomyService;
 import com.iruanp.mcuniversaleconomy.economy.UniversalEconomyServiceImpl;
+import com.iruanp.mcuniversaleconomy.economy.fabric.CommonEconomyProvider;
 import com.iruanp.mcuniversaleconomy.lang.LanguageManager;
 import com.iruanp.mcuniversaleconomy.util.UnifiedLogger;
 
+import eu.pb4.common.economy.api.CommonEconomy;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
@@ -40,6 +42,10 @@ public class MCUniversalEconomyFabric implements ModInitializer {
 
         // Initialize economy service
         economyService = new UniversalEconomyServiceImpl(databaseManager, logger, config, languageManager);
+
+        // Register Common Economy API provider
+        CommonEconomyProvider provider = new CommonEconomyProvider(economyService, config);
+        CommonEconomy.register("mcuniversaleconomy", provider);
 
         // Register commands
         FabricEconomyCommand.register(economyService, languageManager);
