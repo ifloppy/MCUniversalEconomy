@@ -4,7 +4,6 @@ import com.iruanp.mcuniversaleconomy.commands.paper.PaperEconomyCommand;
 import com.iruanp.mcuniversaleconomy.config.ModConfig;
 import com.iruanp.mcuniversaleconomy.database.DatabaseManager;
 import com.iruanp.mcuniversaleconomy.economy.UniversalEconomyService;
-import com.iruanp.mcuniversaleconomy.economy.UniversalEconomyServiceImpl;
 import com.iruanp.mcuniversaleconomy.economy.paper.VaultEconomyProvider;
 import com.iruanp.mcuniversaleconomy.lang.LanguageManager;
 import com.iruanp.mcuniversaleconomy.util.UnifiedLogger;
@@ -37,7 +36,7 @@ public class MCUniversalEconomyPaper extends JavaPlugin implements Listener {
         languageManager = new LanguageManager(getDataFolder(), config.getLanguage());
 
         // Initialize economy service
-        economyService = new UniversalEconomyServiceImpl(databaseManager, logger, config, languageManager);
+        economyService = new UniversalEconomyService(databaseManager, logger, config, languageManager);
 
         // Register commands
         PaperEconomyCommand.register(this, economyService, languageManager);

@@ -57,7 +57,7 @@ public class EconomyCommand {
         }
 
         BigDecimal decimalAmount = BigDecimal.valueOf(amount);
-        return economyService.addBalance(playerUuid, decimalAmount)
+        return economyService.addBalance(playerUuid, decimalAmount, true)
             .thenApply(success -> success ?
                 languageManager.getMessage("give.success", economyService.format(decimalAmount)) :
                 languageManager.getMessage("give.failed"));
@@ -69,7 +69,7 @@ public class EconomyCommand {
         }
 
         BigDecimal decimalAmount = BigDecimal.valueOf(amount);
-        return economyService.subtractBalance(playerUuid, decimalAmount)
+        return economyService.subtractBalance(playerUuid, decimalAmount, true)
             .thenApply(success -> success ?
                 languageManager.getMessage("take.success", economyService.format(decimalAmount)) :
                 languageManager.getMessage("take.failed"));
