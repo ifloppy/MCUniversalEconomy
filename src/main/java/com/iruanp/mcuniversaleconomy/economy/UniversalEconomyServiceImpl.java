@@ -284,7 +284,7 @@ public class UniversalEconomyServiceImpl implements UniversalEconomyService {
     public CompletableFuture<Boolean> createAccount(UUID playerUuid, String username) {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection conn = databaseManager.getConnection()) {
-                // First check if account exists
+                // First check if account exists and get current username
                 try (PreparedStatement checkStmt = conn.prepareStatement(
                     "SELECT username FROM " + prefix + "accounts WHERE uuid = ?")) {
                     checkStmt.setString(1, playerUuid.toString());
@@ -302,18 +302,18 @@ public class UniversalEconomyServiceImpl implements UniversalEconomyService {
                                 logger.info("Updated username for existing account: " + existingUsername + " -> " + username);
                             }
                         }
-                        return true; // Account exists and was potentially updated
+                        return true;
                     }
-                }
 
-                // Create new account if it doesn't exist
-                try (PreparedStatement insertStmt = conn.prepareStatement(
-                    "INSERT INTO " + prefix + "accounts (uuid, username, balance) VALUES (?, ?, 0)")) {
-                    insertStmt.setString(1, playerUuid.toString());
-                    insertStmt.setString(2, username);
-                    insertStmt.executeUpdate();
-                    logger.info("Created new account for player: " + username);
-                    return true;
+                    // Create new account if it doesn't exist
+                    try (PreparedStatement insertStmt = conn.prepareStatement(
+                        "INSERT INTO " + prefix + "accounts (uuid, username, balance) VALUES (?, ?, 0)")) {
+                        insertStmt.setString(1, playerUuid.toString());
+                        insertStmt.setString(2, username);
+                        insertStmt.executeUpdate();
+                        logger.info("Created new account for player: " + username);
+                        return true;
+                    }
                 }
             } catch (SQLException e) {
                 logError("Failed to create/update account", e);

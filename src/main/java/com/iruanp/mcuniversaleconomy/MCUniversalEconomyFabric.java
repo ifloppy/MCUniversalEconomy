@@ -54,8 +54,8 @@ public class MCUniversalEconomyFabric implements ModInitializer {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             economyService.createAccount(handler.player.getUuid(), handler.player.getName().getString())
                 .thenAccept(success -> {
-                    if (success) {
-                        LOGGER.info("Created economy account for player: " + handler.player.getName().getString());
+                    if (!success) {
+                        LOGGER.error("Failed to create economy account for player: " + handler.player.getName().getString());
                     }
                 });
         });
