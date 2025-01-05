@@ -74,8 +74,93 @@ public class FabricEconomyCommand {
 
             // Register command and aliases
             dispatcher.register(ecoCommand);
-            dispatcher.register(literal("economy").redirect(ecoCommand.build()));
-            dispatcher.register(literal("money").redirect(ecoCommand.build()));
+            
+            // Register economy and money as direct aliases
+            var economyCommand = literal("economy")
+                .requires(source -> Permissions.check(source, "mcuniversaleconomy.use", true))
+                .executes(command::showUsage)
+                .then(literal("balance")
+                    .executes(ctx -> command.handleBalance(ctx, null))
+                    .then(argument("player", EntityArgumentType.player())
+                        .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .executes(ctx -> command.handleBalance(ctx, EntityArgumentType.getPlayer(ctx, "player")))
+                    )
+                )
+                .then(literal("pay")
+                    .then(argument("player", EntityArgumentType.player())
+                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                            .executes(command::handlePay)
+                        )
+                    )
+                )
+                .then(literal("give")
+                    .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .then(argument("player", EntityArgumentType.player())
+                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                            .executes(command::handleGive)
+                        )
+                    )
+                )
+                .then(literal("take")
+                    .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .then(argument("player", EntityArgumentType.player())
+                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                            .executes(command::handleTake)
+                        )
+                    )
+                )
+                .then(literal("set")
+                    .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .then(argument("player", EntityArgumentType.player())
+                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                            .executes(command::handleSet)
+                        )
+                    )
+                );
+            dispatcher.register(economyCommand);
+
+            var moneyCommand = literal("money")
+                .requires(source -> Permissions.check(source, "mcuniversaleconomy.use", true))
+                .executes(command::showUsage)
+                .then(literal("balance")
+                    .executes(ctx -> command.handleBalance(ctx, null))
+                    .then(argument("player", EntityArgumentType.player())
+                        .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .executes(ctx -> command.handleBalance(ctx, EntityArgumentType.getPlayer(ctx, "player")))
+                    )
+                )
+                .then(literal("pay")
+                    .then(argument("player", EntityArgumentType.player())
+                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                            .executes(command::handlePay)
+                        )
+                    )
+                )
+                .then(literal("give")
+                    .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .then(argument("player", EntityArgumentType.player())
+                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                            .executes(command::handleGive)
+                        )
+                    )
+                )
+                .then(literal("take")
+                    .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .then(argument("player", EntityArgumentType.player())
+                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                            .executes(command::handleTake)
+                        )
+                    )
+                )
+                .then(literal("set")
+                    .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .then(argument("player", EntityArgumentType.player())
+                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                            .executes(command::handleSet)
+                        )
+                    )
+                );
+            dispatcher.register(moneyCommand);
 
             // Register balance command aliases
             var balanceCommand = literal("balance")
@@ -86,7 +171,16 @@ public class FabricEconomyCommand {
                     .executes(ctx -> command.handleBalance(ctx, EntityArgumentType.getPlayer(ctx, "player")))
                 );
             dispatcher.register(balanceCommand);
-            dispatcher.register(literal("bal").redirect(balanceCommand.build()));
+            
+            // Register 'bal' as a separate command with the same implementation
+            var balAlias = literal("bal")
+                .requires(source -> Permissions.check(source, "mcuniversaleconomy.use", true))
+                .executes(ctx -> command.handleBalance(ctx, null))
+                .then(argument("player", EntityArgumentType.player())
+                    .requires(source -> Permissions.check(source, "mcuniversaleconomy.admin", false))
+                    .executes(ctx -> command.handleBalance(ctx, EntityArgumentType.getPlayer(ctx, "player")))
+                );
+            dispatcher.register(balAlias);
 
             // Register pay command alias
             var payCommand = literal("pay")
