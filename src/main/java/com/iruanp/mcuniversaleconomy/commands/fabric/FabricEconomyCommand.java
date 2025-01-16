@@ -3,7 +3,7 @@ package com.iruanp.mcuniversaleconomy.commands.fabric;
 import com.iruanp.mcuniversaleconomy.commands.EconomyCommand;
 import com.iruanp.mcuniversaleconomy.economy.UniversalEconomyService;
 import com.iruanp.mcuniversaleconomy.lang.LanguageManager;
-import com.iruanp.mcuniversaleconomy.notification.NotificationService;
+import com.iruanp.mcuniversaleconomy.notification.fabric.FabricNotificationService;
 import com.iruanp.mcuniversaleconomy.database.DatabaseManager;
 import com.iruanp.mcuniversaleconomy.util.UnifiedLogger;
 import com.mojang.brigadier.Command;
@@ -18,6 +18,7 @@ import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.server.MinecraftServer;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -30,208 +31,211 @@ public class FabricEconomyCommand {
     private final EconomyCommand economyCommand;
     private final LanguageManager languageManager;
     private final UniversalEconomyService economyService;
-    private final NotificationService notificationService;
+    private final FabricNotificationService notificationService;
     private final DatabaseManager databaseManager;
     private final UnifiedLogger logger;
 
-    public FabricEconomyCommand(UniversalEconomyService economyService, LanguageManager languageManager, DatabaseManager databaseManager, UnifiedLogger logger) {
+    public FabricEconomyCommand(UniversalEconomyService economyService, LanguageManager languageManager, DatabaseManager databaseManager, UnifiedLogger logger, MinecraftServer server) {
         this.databaseManager = databaseManager;
         this.logger = logger;
-        this.notificationService = new NotificationService(databaseManager, logger);
+        this.notificationService = new FabricNotificationService(databaseManager, logger, server);
         this.economyCommand = new EconomyCommand(economyService, languageManager, notificationService);
         this.languageManager = languageManager;
         this.economyService = economyService;
     }
 
     public static void register(UniversalEconomyService economyService, LanguageManager languageManager, DatabaseManager databaseManager, UnifiedLogger logger) {
-        FabricEconomyCommand command = new FabricEconomyCommand(economyService, languageManager, databaseManager, logger);
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            // Main /eco command
-            final var ecoCommand = literal("eco")
-                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
-                .executes(command::showUsage)
-                .then(literal("balance")
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            FabricEconomyCommand command = new FabricEconomyCommand(economyService, languageManager, databaseManager, logger, server);
+            
+            CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+                // Main /eco command
+                final var ecoCommand = literal("eco")
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
+                    .executes(command::showUsage)
+                    .then(literal("balance")
+                        .executes(ctx -> command.handleBalance(ctx, null))
+                        .then(argument("player", GameProfileArgumentType.gameProfile())
+                            .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                            .executes(ctx -> command.handleBalance(ctx, GameProfileArgumentType.getProfileArgument(ctx, "player")))
+                        )
+                    )
+                    .then(literal("balancetop")
+                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .executes(command::handleBalanceTop)
+                    )
+                    .then(literal("pay")
+                        .then(argument("player", EntityArgumentType.player())
+                            .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                                .executes(command::handlePay)
+                            )
+                        )
+                    )
+                    .then(literal("give")
+                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .then(argument("player", GameProfileArgumentType.gameProfile())
+                            .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                                .executes(command::handleGive)
+                            )
+                        )
+                    )
+                    .then(literal("take")
+                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .then(argument("player", GameProfileArgumentType.gameProfile())
+                            .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                                .executes(command::handleTake)
+                            )
+                        )
+                    )
+                    .then(literal("set")
+                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .then(argument("player", GameProfileArgumentType.gameProfile())
+                            .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                                .executes(command::handleSet)
+                            )
+                        )
+                    );
+
+                // Register command and aliases
+                dispatcher.register(ecoCommand);
+                
+                // Register economy and money as direct aliases
+                final var economyCommand = literal("economy")
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
+                    .executes(command::showUsage)
+                    .then(literal("balance")
+                        .executes(ctx -> command.handleBalance(ctx, null))
+                        .then(argument("player", GameProfileArgumentType.gameProfile())
+                            .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                            .executes(ctx -> command.handleBalance(ctx, GameProfileArgumentType.getProfileArgument(ctx, "player")))
+                        )
+                    )
+                    .then(literal("balancetop")
+                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .executes(command::handleBalanceTop)
+                    )
+                    .then(literal("pay")
+                        .then(argument("player", EntityArgumentType.player())
+                            .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                                .executes(command::handlePay)
+                            )
+                        )
+                    )
+                    .then(literal("give")
+                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .then(argument("player", GameProfileArgumentType.gameProfile())
+                            .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                                .executes(command::handleGive)
+                            )
+                        )
+                    )
+                    .then(literal("take")
+                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .then(argument("player", GameProfileArgumentType.gameProfile())
+                            .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                                .executes(command::handleTake)
+                            )
+                        )
+                    )
+                    .then(literal("set")
+                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .then(argument("player", GameProfileArgumentType.gameProfile())
+                            .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                                .executes(command::handleSet)
+                            )
+                        )
+                    );
+                dispatcher.register(economyCommand);
+
+                final var moneyCommand = literal("money")
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
+                    .executes(command::showUsage)
+                    .then(literal("balance")
+                        .executes(ctx -> command.handleBalance(ctx, null))
+                        .then(argument("player", GameProfileArgumentType.gameProfile())
+                            .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                            .executes(ctx -> command.handleBalance(ctx, GameProfileArgumentType.getProfileArgument(ctx, "player")))
+                        )
+                    )
+                    .then(literal("balancetop")
+                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .executes(command::handleBalanceTop)
+                    )
+                    .then(literal("pay")
+                        .then(argument("player", EntityArgumentType.player())
+                            .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                                .executes(command::handlePay)
+                            )
+                        )
+                    )
+                    .then(literal("give")
+                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .then(argument("player", GameProfileArgumentType.gameProfile())
+                            .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                                .executes(command::handleGive)
+                            )
+                        )
+                    )
+                    .then(literal("take")
+                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .then(argument("player", GameProfileArgumentType.gameProfile())
+                            .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                                .executes(command::handleTake)
+                            )
+                        )
+                    )
+                    .then(literal("set")
+                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .then(argument("player", GameProfileArgumentType.gameProfile())
+                            .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
+                                .executes(command::handleSet)
+                            )
+                        )
+                    );
+                dispatcher.register(moneyCommand);
+
+                // Register balance command aliases
+                final var balanceCommand = literal("balance")
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
                     .executes(ctx -> command.handleBalance(ctx, null))
                     .then(argument("player", GameProfileArgumentType.gameProfile())
-                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                        .executes(ctx -> command.handleBalance(ctx, GameProfileArgumentType.getProfileArgument(ctx, "player")))
-                    )
-                )
-                .then(literal("balancetop")
                     .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .executes(command::handleBalanceTop)
-                )
-                .then(literal("pay")
+                        .executes(ctx -> command.handleBalance(ctx, GameProfileArgumentType.getProfileArgument(ctx, "player")))
+                    );
+                dispatcher.register(balanceCommand);
+                
+                // Register 'bal' as a separate command with the same implementation
+                final var balAlias = literal("bal")
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
+                    .executes(ctx -> command.handleBalance(ctx, null))
+                    .then(argument("player", GameProfileArgumentType.gameProfile())
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .executes(ctx -> command.handleBalance(ctx, GameProfileArgumentType.getProfileArgument(ctx, "player")))
+                    );
+                dispatcher.register(balAlias);
+
+                // Register pay command alias
+                final var payCommand = literal("pay")
+                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
                     .then(argument("player", EntityArgumentType.player())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handlePay)
                         )
-                    )
-                )
-                .then(literal("give")
-                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .then(argument("player", GameProfileArgumentType.gameProfile())
-                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
-                            .executes(command::handleGive)
-                        )
-                    )
-                )
-                .then(literal("take")
-                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .then(argument("player", GameProfileArgumentType.gameProfile())
-                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
-                            .executes(command::handleTake)
-                        )
-                    )
-                )
-                .then(literal("set")
-                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .then(argument("player", GameProfileArgumentType.gameProfile())
-                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
-                            .executes(command::handleSet)
-                        )
-                    )
-                );
+                    );
+                dispatcher.register(payCommand);
 
-            // Register command and aliases
-            dispatcher.register(ecoCommand);
-            
-            // Register economy and money as direct aliases
-            final var economyCommand = literal("economy")
-                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
-                .executes(command::showUsage)
-                .then(literal("balance")
-                    .executes(ctx -> command.handleBalance(ctx, null))
-                    .then(argument("player", GameProfileArgumentType.gameProfile())
-                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                        .executes(ctx -> command.handleBalance(ctx, GameProfileArgumentType.getProfileArgument(ctx, "player")))
-                    )
-                )
-                .then(literal("balancetop")
+                // Register balancetop command alias
+                final var balanceTopCommand = literal("balancetop")
                     .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .executes(command::handleBalanceTop)
-                )
-                .then(literal("pay")
-                    .then(argument("player", EntityArgumentType.player())
-                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
-                            .executes(command::handlePay)
-                        )
-                    )
-                )
-                .then(literal("give")
+                    .executes(command::handleBalanceTop);
+                dispatcher.register(balanceTopCommand);
+                
+                // Register 'baltop' as a separate command with the same implementation
+                final var balTopAlias = literal("baltop")
                     .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .then(argument("player", GameProfileArgumentType.gameProfile())
-                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
-                            .executes(command::handleGive)
-                        )
-                    )
-                )
-                .then(literal("take")
-                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .then(argument("player", GameProfileArgumentType.gameProfile())
-                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
-                            .executes(command::handleTake)
-                        )
-                    )
-                )
-                .then(literal("set")
-                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .then(argument("player", GameProfileArgumentType.gameProfile())
-                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
-                            .executes(command::handleSet)
-                        )
-                    )
-                );
-            dispatcher.register(economyCommand);
-
-            final var moneyCommand = literal("money")
-                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
-                .executes(command::showUsage)
-                .then(literal("balance")
-                    .executes(ctx -> command.handleBalance(ctx, null))
-                    .then(argument("player", GameProfileArgumentType.gameProfile())
-                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                        .executes(ctx -> command.handleBalance(ctx, GameProfileArgumentType.getProfileArgument(ctx, "player")))
-                    )
-                )
-                .then(literal("balancetop")
-                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .executes(command::handleBalanceTop)
-                )
-                .then(literal("pay")
-                    .then(argument("player", EntityArgumentType.player())
-                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
-                            .executes(command::handlePay)
-                        )
-                    )
-                )
-                .then(literal("give")
-                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .then(argument("player", GameProfileArgumentType.gameProfile())
-                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
-                            .executes(command::handleGive)
-                        )
-                    )
-                )
-                .then(literal("take")
-                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .then(argument("player", GameProfileArgumentType.gameProfile())
-                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
-                            .executes(command::handleTake)
-                        )
-                    )
-                )
-                .then(literal("set")
-                    .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .then(argument("player", GameProfileArgumentType.gameProfile())
-                        .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
-                            .executes(command::handleSet)
-                        )
-                    )
-                );
-            dispatcher.register(moneyCommand);
-
-            // Register balance command aliases
-            final var balanceCommand = literal("balance")
-                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
-                .executes(ctx -> command.handleBalance(ctx, null))
-                .then(argument("player", GameProfileArgumentType.gameProfile())
-                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .executes(ctx -> command.handleBalance(ctx, GameProfileArgumentType.getProfileArgument(ctx, "player")))
-                );
-            dispatcher.register(balanceCommand);
-            
-            // Register 'bal' as a separate command with the same implementation
-            final var balAlias = literal("bal")
-                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
-                .executes(ctx -> command.handleBalance(ctx, null))
-                .then(argument("player", GameProfileArgumentType.gameProfile())
-                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                    .executes(ctx -> command.handleBalance(ctx, GameProfileArgumentType.getProfileArgument(ctx, "player")))
-                );
-            dispatcher.register(balAlias);
-
-            // Register pay command alias
-            final var payCommand = literal("pay")
-                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
-                .then(argument("player", EntityArgumentType.player())
-                    .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
-                        .executes(command::handlePay)
-                    )
-                );
-            dispatcher.register(payCommand);
-
-            // Register balancetop command alias
-            final var balanceTopCommand = literal("balancetop")
-                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                .executes(command::handleBalanceTop);
-            dispatcher.register(balanceTopCommand);
-            
-            // Register 'baltop' as a separate command with the same implementation
-            final var balTopAlias = literal("baltop")
-                .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
-                .executes(command::handleBalanceTop);
-            dispatcher.register(balTopAlias);
+                    .executes(command::handleBalanceTop);
+                dispatcher.register(balTopAlias);
+            });
         });
     }
 

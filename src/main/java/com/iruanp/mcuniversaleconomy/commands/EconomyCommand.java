@@ -8,14 +8,14 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.Map;
 import java.util.List;
-import com.iruanp.mcuniversaleconomy.notification.NotificationService;
+import com.iruanp.mcuniversaleconomy.notification.BaseNotificationService;
 
 public class EconomyCommand {
     private final UniversalEconomyService economyService;
     private final LanguageManager languageManager;
-    private final NotificationService notificationService;
+    private final BaseNotificationService notificationService;
 
-    public EconomyCommand(UniversalEconomyService economyService, LanguageManager languageManager, NotificationService notificationService) {
+    public EconomyCommand(UniversalEconomyService economyService, LanguageManager languageManager, BaseNotificationService notificationService) {
         this.economyService = economyService;
         this.languageManager = languageManager;
         this.notificationService = notificationService;

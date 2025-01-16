@@ -4,7 +4,7 @@ import com.iruanp.mcuniversaleconomy.MCUniversalEconomyPaper;
 import com.iruanp.mcuniversaleconomy.commands.EconomyCommand;
 import com.iruanp.mcuniversaleconomy.economy.UniversalEconomyService;
 import com.iruanp.mcuniversaleconomy.lang.LanguageManager;
-import com.iruanp.mcuniversaleconomy.notification.NotificationService;
+import com.iruanp.mcuniversaleconomy.notification.paper.PaperNotificationService;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -20,16 +20,16 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
     private final MCUniversalEconomyPaper plugin;
     private final EconomyCommand economyCommand;
     private final LanguageManager languageManager;
-    private final NotificationService notificationService;
+    private final PaperNotificationService notificationService;
 
-    public PaperEconomyCommand(MCUniversalEconomyPaper plugin, UniversalEconomyService economyService, LanguageManager languageManager, NotificationService notificationService) {
+    public PaperEconomyCommand(MCUniversalEconomyPaper plugin, UniversalEconomyService economyService, LanguageManager languageManager, PaperNotificationService notificationService) {
         this.plugin = plugin;
         this.economyCommand = new EconomyCommand(economyService, languageManager, notificationService);
         this.languageManager = languageManager;
         this.notificationService = notificationService;
     }
 
-    public static void register(MCUniversalEconomyPaper plugin, UniversalEconomyService economyService, LanguageManager languageManager, NotificationService notificationService) {
+    public static void register(MCUniversalEconomyPaper plugin, UniversalEconomyService economyService, LanguageManager languageManager, PaperNotificationService notificationService) {
         PaperEconomyCommand command = new PaperEconomyCommand(plugin, economyService, languageManager, notificationService);
         
         // Register main command and its aliases

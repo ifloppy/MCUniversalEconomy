@@ -6,7 +6,8 @@ import com.iruanp.mcuniversaleconomy.database.DatabaseManager;
 import com.iruanp.mcuniversaleconomy.economy.UniversalEconomyService;
 import com.iruanp.mcuniversaleconomy.economy.fabric.CommonEconomyProvider;
 import com.iruanp.mcuniversaleconomy.lang.LanguageManager;
-import com.iruanp.mcuniversaleconomy.notification.NotificationService;
+import com.iruanp.mcuniversaleconomy.notification.fabric.FabricNotificationService;
+import com.iruanp.mcuniversaleconomy.notification.fabric.FabricNotificationPlayer;
 import com.iruanp.mcuniversaleconomy.util.UnifiedLogger;
 import eu.pb4.common.economy.api.CommonEconomy;
 import net.fabricmc.api.ModInitializer;
@@ -49,31 +50,31 @@ public class MCUniversalEconomyFabric implements ModInitializer {
         // Register commands
         FabricEconomyCommand.register(economyService, languageManager, databaseManager, logger);
 
-        NotificationService notificationService = new NotificationService(databaseManager, logger);
-
-        // Register player join event listener
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            economyService.createAccount(handler.player.getUuid(), handler.player.getName().getString())
-                .thenAccept(success -> {
-                    if (success) {
-                        notificationService.sendAndRemoveNotificationsFabric(handler.player);
-                    } else {
-                        LOGGER.error("Failed to create economy account for player: " + handler.player.getName().getString());
-                    }
-                });
-        });
-
-        // Start notification scheduler when server starts
+        // Start notification service when server starts
         net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            // Create notification service
+            FabricNotificationService notificationService = new FabricNotificationService(databaseManager, logger, server);
+
+            // Register player join event listener
+            ServerPlayConnectionEvents.JOIN.register((handler, sender, joinServer) -> {
+                economyService.createAccount(handler.player.getUuid(), handler.player.getName().getString())
+                    .thenAccept(success -> {
+                        if (success) {
+                            notificationService.sendAndRemoveNotifications(new FabricNotificationPlayer(handler.player));
+                        } else {
+                            LOGGER.error("Failed to create economy account for player: " + handler.player.getName().getString());
+                        }
+                    });
+            });
+
+            // Start notification thread
             Thread notificationThread = new Thread(() -> {
                 while (true) {
                     try {
                         Thread.sleep(5000); // Sleep for 5 seconds
                         if (!server.getPlayerManager().getPlayerList().isEmpty()) {
                             server.execute(() -> {
-                                server.getPlayerManager().getPlayerList().forEach(player -> 
-                                    notificationService.sendAndRemoveNotificationsFabric(player)
-                                );
+                                notificationService.sendAndRemoveNotificationsToAllOnlinePlayers();
                             });
                         }
                     } catch (InterruptedException e) {

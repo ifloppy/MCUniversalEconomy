@@ -7,7 +7,8 @@ import com.iruanp.mcuniversaleconomy.economy.UniversalEconomyService;
 import com.iruanp.mcuniversaleconomy.economy.paper.VaultEconomyProvider;
 import com.iruanp.mcuniversaleconomy.lang.LanguageManager;
 import com.iruanp.mcuniversaleconomy.util.UnifiedLogger;
-import com.iruanp.mcuniversaleconomy.notification.NotificationService;
+import com.iruanp.mcuniversaleconomy.notification.paper.PaperNotificationService;
+import com.iruanp.mcuniversaleconomy.notification.paper.PaperNotificationPlayer;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -21,7 +22,7 @@ public class MCUniversalEconomyPaper extends JavaPlugin implements Listener {
     private static DatabaseManager databaseManager;
     private static LanguageManager languageManager;
     private static UnifiedLogger logger;
-    private static NotificationService notificationService;
+    private static PaperNotificationService notificationService;
 
     @Override
     public void onEnable() {
@@ -39,8 +40,9 @@ public class MCUniversalEconomyPaper extends JavaPlugin implements Listener {
 
         // Initialize economy service
         economyService = new UniversalEconomyService(databaseManager, logger, config, languageManager);
+        
         // Create notification service
-        notificationService = new NotificationService(databaseManager, logger);
+        notificationService = new PaperNotificationService(databaseManager, logger);
 
         // Register commands
         PaperEconomyCommand.register(this, economyService, languageManager, notificationService);
@@ -72,7 +74,7 @@ public class MCUniversalEconomyPaper extends JavaPlugin implements Listener {
         economyService.createAccount(event.getPlayer().getUniqueId(), event.getPlayer().getName())
             .thenAccept(success -> {
                 if (success) {
-                    notificationService.sendAndRemoveNotifications(event.getPlayer());
+                    notificationService.sendAndRemoveNotifications(new PaperNotificationPlayer(event.getPlayer()));
                     getLogger().info("Created economy account for player: " + event.getPlayer().getName());
                 }
             });
