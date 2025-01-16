@@ -12,10 +12,13 @@ For command usage, please refer to [USAGE.md](USAGE.md).
 
 - Universal compatibility with FabricMC and PaperMC servers
 - MariaDB database support with customizable prefix
-- Transaction history tracking
+- Transaction history tracking with server identification
+- Offline player support with persistent notifications
 - API support for both platforms:
   - FabricMC: Common Economy API
   - PaperMC: Vault API (via VaultUnlockedAPI)
+- Multi-language support with customizable messages
+- Configurable transaction settings (tax, limits, logging)
 
 ## Technical Details
 
@@ -30,10 +33,27 @@ For command usage, please refer to [USAGE.md](USAGE.md).
 
 ### Database Structure
 
-The project uses MariaDB with a structure inspired by XConomy:
-- Account data table
-- Transaction records table
-- Configurable table prefix support
+The project uses MariaDB with three main tables:
+
+1. **Accounts Table**: Stores player account information
+   - UUID as primary key
+   - Username tracking
+   - Balance management
+   - Last seen timestamp
+
+2. **Transactions Table**: Records all economy transactions
+   - Unique transaction ID
+   - Source and target UUIDs
+   - Transaction amount and tax
+   - Transaction type
+   - Server identifier
+   - Timestamp
+
+3. **Notifications Table**: Handles offline player notifications
+   - Notification ID
+   - Recipient UUID
+   - Message content
+   - Timestamp
 
 ### Cross-Platform Compatibility
 
@@ -76,7 +96,7 @@ settings:
   initial_balance: 0.0
   currency_symbol: "$"
   currency_format: "#,##0.00"
-  language: en
+  language: en_US
   check_updates: true
   server_id: null  # Optional server identifier. Use String value
   
@@ -90,13 +110,23 @@ transactions:
 
 ## API Usage
 
-For both fabricmc and papermc, our plugin will use the Common Economy API and Vault API respectively.
+### FabricMC
+The mod implements the Common Economy API, providing a standard interface for other mods to interact with the economy system.
+
+### PaperMC
+The plugin implements the Vault API through VaultUnlockedAPI, ensuring compatibility with existing plugins that use Vault for economy functions.
 
 ## Building from Source
 
 1. Clone the repository
 2. Run `./gradlew build`
 3. Find the compiled JAR in `build/libs`
+
+## Migration Tools
+
+The project includes migration tools for converting from other economy plugins:
+- Impactor Economy migration script (see `migrate` directory)
+- Support for custom migration through SQL scripts
 
 ## Contributing
 
@@ -106,14 +136,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 [GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-## Credits
-
-This project takes inspiration from:
-- XConomy (Database structure)
-
 ## Project Structure
-
-### Core Components
 
 ```
 src/main/java/com/iruanp/mcuniversaleconomy/
@@ -136,6 +159,13 @@ src/main/java/com/iruanp/mcuniversaleconomy/
 │   ├── UniversalEconomyServiceImpl.java # Implementation of economy service
 │   └── paper/
 │       └── VaultEconomyProvider.java  # Vault API implementation
+├── notification/
+│   ├── BaseNotificationService.java  # Common notification handling
+│   ├── NotificationPlayer.java       # Player notification interface
+│   ├── fabric/
+│   │   └── FabricNotificationService.java # Fabric notifications
+│   └── paper/
+│       └── PaperNotificationService.java  # Paper notifications
 ├── platform/
 │   └── PlatformType.java            # Platform detection utility
 └── util/
@@ -165,5 +195,13 @@ CREATE TABLE {prefix}transactions (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (source_uuid) REFERENCES {prefix}accounts(uuid),
     FOREIGN KEY (target_uuid) REFERENCES {prefix}accounts(uuid)
+);
+
+-- Notifications Table
+CREATE TABLE {prefix}notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    recipient_uuid VARCHAR(36) NOT NULL,
+    message TEXT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ``` 
