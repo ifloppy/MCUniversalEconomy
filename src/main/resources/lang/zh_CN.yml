@@ -4,6 +4,8 @@ messages:
     other_player: "%s 的余额是 %s"
     console_error: "只有玩家可以查看余额"
     top_title: "===== 余额排行榜 ====="
+    total_balance: "总余额：%s"
+    economy_total: "经济系统总余额：%s"
   pay:
     error:
       amount_positive: "金额必须为正数"

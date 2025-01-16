@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.Map;
+import java.util.List;
 
 public class EconomyCommand {
     private final UniversalEconomyService economyService;
@@ -23,18 +24,33 @@ public class EconomyCommand {
     }
 
     public CompletableFuture<String> balanceTop(int limit) {
-        return economyService.getTopBalances(limit)
-            .thenApply(topBalances -> {
+        CompletableFuture<List<Map.Entry<String, BigDecimal>>> topBalancesFuture = economyService.getTopBalances(limit);
+        CompletableFuture<BigDecimal> totalBalanceFuture = economyService.getTotalBalance();
+
+        return CompletableFuture.allOf(topBalancesFuture, totalBalanceFuture)
+            .thenApply(v -> {
+                List<Map.Entry<String, BigDecimal>> topBalances = topBalancesFuture.join();
+                BigDecimal totalEconomyBalance = totalBalanceFuture.join();
+
                 StringBuilder message = new StringBuilder();
                 message.append(languageManager.getMessage("balance.top_title")).append("\n");
+                
                 int rank = 1;
+                BigDecimal topTotalBalance = BigDecimal.ZERO;
                 for (Map.Entry<String, BigDecimal> entry : topBalances) {
                     String formattedBalance = economyService.format(entry.getValue());
                     message.append(String.format("#%d. %s - %s\n", 
                         rank++, 
                         entry.getKey(), 
                         formattedBalance));
+                    topTotalBalance = topTotalBalance.add(entry.getValue());
                 }
+                
+                message.append("\n")
+                    .append(languageManager.getMessage("balance.total_balance", economyService.format(topTotalBalance)))
+                    .append("\n")
+                    .append(languageManager.getMessage("balance.economy_total", economyService.format(totalEconomyBalance)));
+                
                 return message.toString().trim();
             });
     }

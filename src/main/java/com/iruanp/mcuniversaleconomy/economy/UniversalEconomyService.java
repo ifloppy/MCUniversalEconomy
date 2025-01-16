@@ -377,6 +377,23 @@ public class UniversalEconomyService {
         });
     }
 
+    public CompletableFuture<BigDecimal> getTotalBalance() {
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection conn = databaseManager.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT SUM(balance) as total FROM " + prefix + "accounts")) {
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    return rs.getBigDecimal("total");
+                }
+                return BigDecimal.ZERO;
+            } catch (SQLException e) {
+                logError("Failed to get total balance", e);
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
     private void logError(String message, Exception e) {
         logger.error(message, e);
     }
