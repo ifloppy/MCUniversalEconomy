@@ -7,6 +7,7 @@ import com.iruanp.mcuniversaleconomy.economy.UniversalEconomyService;
 import com.iruanp.mcuniversaleconomy.economy.paper.VaultEconomyProvider;
 import com.iruanp.mcuniversaleconomy.lang.LanguageManager;
 import com.iruanp.mcuniversaleconomy.util.UnifiedLogger;
+import com.iruanp.mcuniversaleconomy.notification.NotificationService;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -20,6 +21,7 @@ public class MCUniversalEconomyPaper extends JavaPlugin implements Listener {
     private static DatabaseManager databaseManager;
     private static LanguageManager languageManager;
     private static UnifiedLogger logger;
+    private static NotificationService notificationService;
 
     @Override
     public void onEnable() {
@@ -37,9 +39,11 @@ public class MCUniversalEconomyPaper extends JavaPlugin implements Listener {
 
         // Initialize economy service
         economyService = new UniversalEconomyService(databaseManager, logger, config, languageManager);
+        // Create notification service
+        notificationService = new NotificationService(databaseManager, logger);
 
         // Register commands
-        PaperEconomyCommand.register(this, economyService, languageManager);
+        PaperEconomyCommand.register(this, economyService, languageManager, notificationService);
 
         // Register event listeners
         getServer().getPluginManager().registerEvents(this, this);
@@ -51,6 +55,15 @@ public class MCUniversalEconomyPaper extends JavaPlugin implements Listener {
             getLogger().info("Vault integration enabled");
         }
 
+        // Start notification scheduler
+        getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
+            if (!getServer().getOnlinePlayers().isEmpty()) {
+                getServer().getScheduler().runTask(this, () -> {
+                    notificationService.sendAndRemoveNotificationsToAllOnlinePlayers();
+                });
+            }
+        }, 100L, 100L); // 100 ticks = 5 seconds
+
         getLogger().info("MCUniversalEconomy enabled");
     }
 
@@ -59,6 +72,7 @@ public class MCUniversalEconomyPaper extends JavaPlugin implements Listener {
         economyService.createAccount(event.getPlayer().getUniqueId(), event.getPlayer().getName())
             .thenAccept(success -> {
                 if (success) {
+                    notificationService.sendAndRemoveNotifications(event.getPlayer());
                     getLogger().info("Created economy account for player: " + event.getPlayer().getName());
                 }
             });

@@ -8,14 +8,17 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.Map;
 import java.util.List;
+import com.iruanp.mcuniversaleconomy.notification.NotificationService;
 
 public class EconomyCommand {
     private final UniversalEconomyService economyService;
     private final LanguageManager languageManager;
+    private final NotificationService notificationService;
 
-    public EconomyCommand(UniversalEconomyService economyService, LanguageManager languageManager) {
+    public EconomyCommand(UniversalEconomyService economyService, LanguageManager languageManager, NotificationService notificationService) {
         this.economyService = economyService;
         this.languageManager = languageManager;
+        this.notificationService = notificationService;
     }
 
     public CompletableFuture<String> balance(UUID playerUuid) {
@@ -62,9 +65,15 @@ public class EconomyCommand {
 
         BigDecimal decimalAmount = BigDecimal.valueOf(amount);
         return economyService.transfer(sourceUuid, targetUuid, decimalAmount)
-            .thenApply(result -> result.isSuccess() ? 
-                languageManager.getMessage("pay.success", result.getMessage()) :
-                languageManager.getMessage("pay.failed", result.getMessage()));
+            .thenApply(result -> {
+                if (result.isSuccess()) {
+                    String message = languageManager.getMessage("pay.success", result.getMessage());
+                    notificationService.sendNotification(targetUuid, message);
+                    return message;
+                } else {
+                    return languageManager.getMessage("pay.failed", result.getMessage());
+                }
+            });
     }
 
     public CompletableFuture<String> give(UUID playerUuid, double amount) {

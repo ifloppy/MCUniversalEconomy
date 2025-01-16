@@ -3,6 +3,9 @@ package com.iruanp.mcuniversaleconomy.commands.fabric;
 import com.iruanp.mcuniversaleconomy.commands.EconomyCommand;
 import com.iruanp.mcuniversaleconomy.economy.UniversalEconomyService;
 import com.iruanp.mcuniversaleconomy.lang.LanguageManager;
+import com.iruanp.mcuniversaleconomy.notification.NotificationService;
+import com.iruanp.mcuniversaleconomy.database.DatabaseManager;
+import com.iruanp.mcuniversaleconomy.util.UnifiedLogger;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -27,18 +30,24 @@ public class FabricEconomyCommand {
     private final EconomyCommand economyCommand;
     private final LanguageManager languageManager;
     private final UniversalEconomyService economyService;
+    private final NotificationService notificationService;
+    private final DatabaseManager databaseManager;
+    private final UnifiedLogger logger;
 
-    public FabricEconomyCommand(UniversalEconomyService economyService, LanguageManager languageManager) {
-        this.economyCommand = new EconomyCommand(economyService, languageManager);
+    public FabricEconomyCommand(UniversalEconomyService economyService, LanguageManager languageManager, DatabaseManager databaseManager, UnifiedLogger logger) {
+        this.databaseManager = databaseManager;
+        this.logger = logger;
+        this.notificationService = new NotificationService(databaseManager, logger);
+        this.economyCommand = new EconomyCommand(economyService, languageManager, notificationService);
         this.languageManager = languageManager;
         this.economyService = economyService;
     }
 
-    public static void register(UniversalEconomyService economyService, LanguageManager languageManager) {
-        FabricEconomyCommand command = new FabricEconomyCommand(economyService, languageManager);
+    public static void register(UniversalEconomyService economyService, LanguageManager languageManager, DatabaseManager databaseManager, UnifiedLogger logger) {
+        FabricEconomyCommand command = new FabricEconomyCommand(economyService, languageManager, databaseManager, logger);
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             // Main /eco command
-            var ecoCommand = literal("eco")
+            final var ecoCommand = literal("eco")
                 .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
                 .executes(command::showUsage)
                 .then(literal("balance")
@@ -88,7 +97,7 @@ public class FabricEconomyCommand {
             dispatcher.register(ecoCommand);
             
             // Register economy and money as direct aliases
-            var economyCommand = literal("economy")
+            final var economyCommand = literal("economy")
                 .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
                 .executes(command::showUsage)
                 .then(literal("balance")
@@ -135,7 +144,7 @@ public class FabricEconomyCommand {
                 );
             dispatcher.register(economyCommand);
 
-            var moneyCommand = literal("money")
+            final var moneyCommand = literal("money")
                 .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
                 .executes(command::showUsage)
                 .then(literal("balance")
@@ -183,7 +192,7 @@ public class FabricEconomyCommand {
             dispatcher.register(moneyCommand);
 
             // Register balance command aliases
-            var balanceCommand = literal("balance")
+            final var balanceCommand = literal("balance")
                 .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
                 .executes(ctx -> command.handleBalance(ctx, null))
                 .then(argument("player", GameProfileArgumentType.gameProfile())
@@ -193,7 +202,7 @@ public class FabricEconomyCommand {
             dispatcher.register(balanceCommand);
             
             // Register 'bal' as a separate command with the same implementation
-            var balAlias = literal("bal")
+            final var balAlias = literal("bal")
                 .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
                 .executes(ctx -> command.handleBalance(ctx, null))
                 .then(argument("player", GameProfileArgumentType.gameProfile())
@@ -203,7 +212,7 @@ public class FabricEconomyCommand {
             dispatcher.register(balAlias);
 
             // Register pay command alias
-            var payCommand = literal("pay")
+            final var payCommand = literal("pay")
                 .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
                 .then(argument("player", EntityArgumentType.player())
                     .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
@@ -213,13 +222,13 @@ public class FabricEconomyCommand {
             dispatcher.register(payCommand);
 
             // Register balancetop command alias
-            var balanceTopCommand = literal("balancetop")
+            final var balanceTopCommand = literal("balancetop")
                 .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
                 .executes(command::handleBalanceTop);
             dispatcher.register(balanceTopCommand);
             
             // Register 'baltop' as a separate command with the same implementation
-            var balTopAlias = literal("baltop")
+            final var balTopAlias = literal("baltop")
                 .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
                 .executes(command::handleBalanceTop);
             dispatcher.register(balTopAlias);

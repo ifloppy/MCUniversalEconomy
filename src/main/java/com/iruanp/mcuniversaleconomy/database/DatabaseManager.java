@@ -78,12 +78,24 @@ public class DatabaseManager {
             )
             """, prefix, prefix, prefix);
 
+        // Create notifications table
+        String createNotificationsTable = String.format("""
+            CREATE TABLE IF NOT EXISTS %snotifications (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                recipient_uuid VARCHAR(36) NOT NULL,
+                message TEXT NOT NULL,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """, prefix);
+
         try (Connection conn = getConnection();
              PreparedStatement accountsStmt = conn.prepareStatement(createAccountsTable);
-             PreparedStatement transactionsStmt = conn.prepareStatement(createTransactionsTable)) {
-            
+             PreparedStatement transactionsStmt = conn.prepareStatement(createTransactionsTable);
+             PreparedStatement notificationsStmt = conn.prepareStatement(createNotificationsTable)) {
+
             accountsStmt.executeUpdate();
             transactionsStmt.executeUpdate();
+            notificationsStmt.executeUpdate();
             logger.info("Database tables initialized successfully");
         } catch (SQLException e) {
             logger.severe("Failed to initialize database tables: " + e.getMessage());
