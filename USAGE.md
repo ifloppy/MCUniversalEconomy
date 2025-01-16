@@ -16,7 +16,7 @@ You can also use shorter aliases for common commands:
 - `/eco take <player> <amount>` - Take money from a player
 - `/eco set <player> <amount>` - Set a player's balance
 - `/eco balancetop` - View the richest players
-  - Alias: `/baltop`
+  - Alias: `/baltop`, `balancetop`
 
 ## Permissions
 
