@@ -94,6 +94,10 @@ public class FabricEconomyCommand {
                                 .executes(command::handleSet)
                             )
                         )
+                    )
+                    .then(literal("reload")
+                        .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.admin", false))
+                        .executes(command::handleReload)
                     );
 
                 // Register command and aliases
@@ -376,7 +380,14 @@ public class FabricEconomyCommand {
     private int handleBalanceTop(CommandContext<ServerCommandSource> ctx) {
         ServerCommandSource source = ctx.getSource();
         economyCommand.balanceTop(10)
-            .thenAccept(message -> source.sendFeedback(() -> Text.literal(message), false));
+            .thenAccept(message -> source.sendMessage(Text.literal(message)));
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int handleReload(CommandContext<ServerCommandSource> ctx) {
+        ServerCommandSource source = ctx.getSource();
+        economyCommand.reload()
+            .thenAccept(message -> source.sendMessage(Text.literal(message)));
         return Command.SINGLE_SUCCESS;
     }
 } 

@@ -17,6 +17,7 @@ You can also use shorter aliases for common commands:
 - `/eco set <player> <amount>` - Set a player's balance
 - `/eco balancetop` - View the richest players
   - Alias: `/baltop`, `balancetop`
+- `/eco reload` - Reload messages and config file
 
 ## Permissions
 
@@ -70,6 +71,7 @@ You can also use shorter aliases for common commands:
 /eco give player1 1000   # Give 1000 to player1
 /eco take player1 500    # Take 500 from player1
 /eco set player1 2000    # Set player1's balance to 2000
+/eco reload             # Reload messages and config file
 ```
 
 ## Notes

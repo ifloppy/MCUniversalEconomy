@@ -92,6 +92,9 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
             case "baltop":
                 handleBalanceTop(sender);
                 break;
+            case "reload":
+                handleReload(sender);
+                break;
             default:
                 sender.sendMessage(languageManager.getMessage("usage.eco"));
         }
@@ -249,6 +252,16 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
         economyCommand.balanceTop(10)
             .thenAccept(message -> Bukkit.getScheduler().runTask(plugin, () -> 
                 sender.sendMessage(message.split("\n"))));
+    }
+
+    private void handleReload(CommandSender sender) {
+        if (!sender.hasPermission("mcuniversaleconomy.admin")) {
+            sender.sendMessage(languageManager.getMessage("general.no_permission"));
+            return;
+        }
+        economyCommand.reload()
+            .thenAccept(message -> Bukkit.getScheduler().runTask(plugin, () -> 
+                sender.sendMessage(message)));
     }
 
     @Override

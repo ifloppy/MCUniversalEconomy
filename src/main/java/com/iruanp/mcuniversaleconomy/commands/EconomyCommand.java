@@ -9,16 +9,20 @@ import java.util.concurrent.CompletableFuture;
 import java.util.Map;
 import java.util.List;
 import com.iruanp.mcuniversaleconomy.notification.BaseNotificationService;
+import com.iruanp.mcuniversaleconomy.MCUniversalEconomyPaper;
+import com.iruanp.mcuniversaleconomy.config.ModConfig;
 
 public class EconomyCommand {
     private final UniversalEconomyService economyService;
     private final LanguageManager languageManager;
     private final BaseNotificationService notificationService;
+    private final ModConfig config;
 
     public EconomyCommand(UniversalEconomyService economyService, LanguageManager languageManager, BaseNotificationService notificationService) {
         this.economyService = economyService;
         this.languageManager = languageManager;
         this.notificationService = notificationService;
+        this.config = economyService.getConfig();
     }
 
     public CompletableFuture<String> balance(UUID playerUuid) {
@@ -110,5 +114,15 @@ public class EconomyCommand {
             .thenApply(success -> success ?
                 languageManager.getMessage("set.success", economyService.format(decimalAmount)) :
                 languageManager.getMessage("set.failed"));
+    }
+
+    public CompletableFuture<String> reload() {
+        try {
+            languageManager.reload();
+            config.loadFromYaml(config.getConfigPath());
+            return CompletableFuture.completedFuture(languageManager.getMessage("reload.success"));
+        } catch (Exception e) {
+            return CompletableFuture.completedFuture(languageManager.getMessage("reload.failed"));
+        }
     }
 } 

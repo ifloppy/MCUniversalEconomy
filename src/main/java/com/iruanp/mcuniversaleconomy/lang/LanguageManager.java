@@ -90,4 +90,10 @@ public class LanguageManager {
         String message = messages.getOrDefault(key, fallbackMessages.getOrDefault(key, key));
         return String.format(message, args);
     }
+
+    public void reload() {
+        messages.clear();
+        fallbackMessages.clear();
+        loadLanguage();
+    }
 } 

@@ -27,13 +27,16 @@ messages:
       amount_negative: "Amount cannot be negative"
     success: "Successfully set balance to %s"
     failed: "Failed to set balance"
+  reload:
+    success: "Successfully reloaded messages and config"
+    failed: "Failed to reload messages and config"
   general:
     no_permission: "You don't have permission to use this command"
     player_not_found: "Player not found"
     invalid_amount: "Invalid amount"
     command_usage: "Invalid command usage"
   usage:
-    eco: "Usage: /eco <balance|pay|give|take|set>"
+    eco: "Usage: /eco <balance|pay|give|take|set|reload>"
     give: "Usage: /eco give <player> <amount>"
     take: "Usage: /eco take <player> <amount>"
     set: "Usage: /eco set <player> <amount>"

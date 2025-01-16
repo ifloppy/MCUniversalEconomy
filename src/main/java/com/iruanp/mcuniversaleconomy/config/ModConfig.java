@@ -31,9 +31,11 @@ public class ModConfig {
     private double maximumPayment = -1.0;
 
     private UnifiedLogger logger;
+    private Path configPath;
 
     // Load config for both platforms
     public void loadFromYaml(Path path) {
+        this.configPath = path;
         File file = path.toFile();
         if (!file.exists()) {
             // Save default config
@@ -181,4 +183,6 @@ public class ModConfig {
 
     public UnifiedLogger getLogger() { return logger; }
     public void setLogger(UnifiedLogger logger) { this.logger = logger; }
+
+    public Path getConfigPath() { return configPath; }
 }

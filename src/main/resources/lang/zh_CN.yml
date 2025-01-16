@@ -27,13 +27,16 @@ messages:
       amount_negative: "金额不能为负数"
     success: "成功将余额设置为 %s"
     failed: "设置余额失败"
+  reload:
+    success: "成功重新加载消息和配置文件"
+    failed: "重新加载消息和配置文件失败"
   general:
     no_permission: "你没有权限使用此命令"
     player_not_found: "找不到该玩家"
     invalid_amount: "无效的金额"
     command_usage: "命令用法错误"
   usage:
-    eco: "用法：/eco <balance|pay|give|take|set|balancetop>"
+    eco: "用法：/eco <balance|pay|give|take|set|reload>"
     give: "用法：/eco give <玩家> <金额>"
     take: "用法：/eco take <玩家> <金额>"
     set: "用法：/eco set <玩家> <金额>"

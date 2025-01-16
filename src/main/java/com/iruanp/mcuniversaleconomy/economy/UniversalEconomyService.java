@@ -397,4 +397,8 @@ public class UniversalEconomyService {
     private void logError(String message, Exception e) {
         logger.error(message, e);
     }
+
+    public ModConfig getConfig() {
+        return config;
+    }
 } 
