@@ -11,6 +11,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class PaperNotificationService extends BaseNotificationService {
@@ -38,9 +40,10 @@ public class PaperNotificationService extends BaseNotificationService {
 
     @Override
     public void sendAndRemoveNotificationsToAllOnlinePlayers() {
-        Bukkit.getOnlinePlayers().stream()
-            .filter(Player::isOnline)
-            .forEach(player -> {
+        // Create a snapshot of online players to avoid concurrent modification
+        List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
+        for (Player player : onlinePlayers) {
+            if (player.isOnline()) {
                 UUID uuid = player.getUniqueId();
                 String sql = String.format("SELECT id, message FROM %snotifications WHERE recipient_uuid = ?", prefix);
                 try (Connection conn = databaseManager.getConnection();
@@ -57,6 +60,7 @@ public class PaperNotificationService extends BaseNotificationService {
                 } catch (SQLException e) {
                     logger.severe("Failed to send and remove notifications from database: " + e.getMessage());
                 }
-            });
+            }
+        }
     }
 } 
