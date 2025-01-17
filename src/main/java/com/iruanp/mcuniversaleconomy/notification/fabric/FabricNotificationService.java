@@ -8,6 +8,12 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class FabricNotificationService extends BaseNotificationService {
@@ -37,8 +43,26 @@ public class FabricNotificationService extends BaseNotificationService {
 
     @Override
     public void sendAndRemoveNotificationsToAllOnlinePlayers() {
-        server.getPlayerManager().getPlayerList().forEach(player ->
-            sendAndRemoveNotifications(new FabricNotificationPlayer(player))
-        );
+        List<ServerPlayerEntity> players = new ArrayList<>(server.getPlayerManager().getPlayerList());
+        players.stream()
+            .filter(player -> !player.isDisconnected())
+            .forEach(player -> {
+                UUID uuid = player.getUuid();
+                String sql = String.format("SELECT id, message FROM %snotifications WHERE recipient_uuid = ?", prefix);
+                try (Connection conn = databaseManager.getConnection();
+                     PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setString(1, uuid.toString());
+                    ResultSet rs = stmt.executeQuery();
+                    while (rs.next()) {
+                        int id = rs.getInt("id");
+                        String message = rs.getString("message");
+                        server.execute(() -> player.sendMessage(Text.literal(message)));
+                        deleteNotification(id);
+                        logger.info("Notification sent and removed from database for UUID: " + uuid);
+                    }
+                } catch (SQLException e) {
+                    logger.severe("Failed to send and remove notifications from database: " + e.getMessage());
+                }
+            });
     }
 } 

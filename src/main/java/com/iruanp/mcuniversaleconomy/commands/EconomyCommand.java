@@ -15,7 +15,7 @@ import com.iruanp.mcuniversaleconomy.config.ModConfig;
 public class EconomyCommand {
     private final UniversalEconomyService economyService;
     private final LanguageManager languageManager;
-    private final BaseNotificationService notificationService;
+    private BaseNotificationService notificationService;
     private final ModConfig config;
 
     public EconomyCommand(UniversalEconomyService economyService, LanguageManager languageManager, BaseNotificationService notificationService) {
@@ -23,6 +23,10 @@ public class EconomyCommand {
         this.languageManager = languageManager;
         this.notificationService = notificationService;
         this.config = economyService.getConfig();
+    }
+
+    public void setNotificationService(BaseNotificationService notificationService) {
+        this.notificationService = notificationService;
     }
 
     public CompletableFuture<String> balance(UUID playerUuid) {

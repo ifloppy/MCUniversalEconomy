@@ -51,7 +51,7 @@ public abstract class BaseNotificationService {
         }
     }
 
-    private void deleteNotification(int id) {
+    protected void deleteNotification(int id) {
         String sql = String.format("DELETE FROM %snotifications WHERE id = ?", prefix);
         try (Connection conn = databaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {

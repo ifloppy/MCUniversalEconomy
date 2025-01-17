@@ -73,9 +73,7 @@ public class MCUniversalEconomyFabric implements ModInitializer {
                     try {
                         Thread.sleep(5000); // Sleep for 5 seconds
                         if (!server.getPlayerManager().getPlayerList().isEmpty()) {
-                            server.execute(() -> {
-                                notificationService.sendAndRemoveNotificationsToAllOnlinePlayers();
-                            });
+                            notificationService.sendAndRemoveNotificationsToAllOnlinePlayers();
                         }
                     } catch (InterruptedException e) {
                         LOGGER.error("Notification thread interrupted", e);

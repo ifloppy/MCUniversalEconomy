@@ -57,14 +57,17 @@ public class MCUniversalEconomyPaper extends JavaPlugin implements Listener {
             getLogger().info("Vault integration enabled");
         }
 
-        // Start notification scheduler
-        getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
-            if (!getServer().getOnlinePlayers().isEmpty()) {
-                getServer().getScheduler().runTask(this, () -> {
-                    notificationService.sendAndRemoveNotificationsToAllOnlinePlayers();
-                });
+        // Start notification scheduler after server load
+        getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+            public void run() {
+                getServer().getScheduler().runTaskTimerAsynchronously(MCUniversalEconomyPaper.this, () -> {
+                    if (!getServer().getOnlinePlayers().isEmpty()) {
+                        notificationService.sendAndRemoveNotificationsToAllOnlinePlayers();
+                    }
+                }, 100L, 100L); // 100 ticks = 5 seconds
+                getLogger().info("Notification scheduler started");
             }
-        }, 100L, 100L); // 100 ticks = 5 seconds
+        });
 
         getLogger().info("MCUniversalEconomy enabled");
     }
