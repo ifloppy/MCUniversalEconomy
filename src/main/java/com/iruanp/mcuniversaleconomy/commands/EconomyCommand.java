@@ -75,7 +75,7 @@ public class EconomyCommand {
         return economyService.transfer(sourceUuid, targetUuid, decimalAmount)
             .thenApply(result -> {
                 if (result.isSuccess()) {
-                    String message = languageManager.getMessage("pay.success", result.getMessage());
+                    String message = languageManager.getMessage("pay.success", result.getPayerName(), result.getPayeeName(), economyService.format(decimalAmount), economyService.format(decimalAmount.multiply(BigDecimal.valueOf(economyService.getConfig().getPaymentTax()))));
                     notificationService.sendNotification(targetUuid, message);
                     return message;
                 } else {

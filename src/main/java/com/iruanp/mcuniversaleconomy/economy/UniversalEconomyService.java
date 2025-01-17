@@ -213,10 +213,32 @@ public class UniversalEconomyService {
             // Calculate tax
             BigDecimal tax = amount.multiply(BigDecimal.valueOf(config.getPaymentTax()));
             BigDecimal totalDeduction = amount.add(tax);
+            String payerName = null;
+            String payeeName = null;
 
             try (Connection conn = databaseManager.getConnection()) {
                 conn.setAutoCommit(false);
                 try {
+                    // Get payer name
+                    try (PreparedStatement getPayerStmt = conn.prepareStatement(
+                        "SELECT username FROM " + prefix + "accounts WHERE uuid = ?")) {
+                        getPayerStmt.setString(1, sourceUuid.toString());
+                        ResultSet rs = getPayerStmt.executeQuery();
+                        if (rs.next()) {
+                            payerName = rs.getString("username");
+                        }
+                    }
+
+                    // Get payee name
+                    try (PreparedStatement getPayeeStmt = conn.prepareStatement(
+                        "SELECT username FROM " + prefix + "accounts WHERE uuid = ?")) {
+                        getPayeeStmt.setString(1, targetUuid.toString());
+                         ResultSet rs = getPayeeStmt.executeQuery();
+                        if (rs.next()) {
+                            payeeName = rs.getString("username");
+                        }
+                    }
+
                     // Check if source has enough including tax
                     try (PreparedStatement checkStmt = conn.prepareStatement(
                         "SELECT balance FROM " + prefix + "accounts WHERE uuid = ? AND balance >= ?")) {
@@ -258,7 +280,7 @@ public class UniversalEconomyService {
                     }
 
                     conn.commit();
-                    return new TransactionResult(true, "Successfully transferred " + format(amount) + " (including tax of " + format(tax) + ")");
+                    return new TransactionResult(true, "Successfully transferred " + format(amount) + " (including tax of " + format(tax) + ")", payerName, payeeName);
                 } catch (SQLException e) {
                     conn.rollback();
                     throw e;

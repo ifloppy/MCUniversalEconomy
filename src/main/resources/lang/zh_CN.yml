@@ -1,46 +1,46 @@
 messages:
   balance:
-    success: "你的余额是 %s"
-    other_player: "%s 的余额是 %s"
-    console_error: "只有玩家可以查看余额"
-    top_title: "===== 余额排行榜 ====="
-    total_balance: "总余额：%s"
-    economy_total: "经济系统总余额：%s"
+    success: "§a你的余额是 %s"
+    other_player: "§a%s 的余额是 %s"
+    console_error: "§c只有玩家可以查看余额"
+    top_title: "§6===== 余额排行榜 ====="
+    total_balance: "§e总余额：%s"
+    economy_total: "§e经济系统总余额：%s"
   pay:
     error:
-      amount_positive: "金额必须为正数"
-      self_pay: "你不能给自己转账"
-    success: "成功支付 %s"
-    failed: "支付失败：%s"
+      amount_positive: "§c金额必须为正数"
+      self_pay: "§c你不能给自己转账"
+    success: "§a%s 支付给 %s 金额 %s, 税费为 %s"
+    failed: "§c支付失败：%s"
   give:
     error:
-      amount_positive: "金额必须为正数"
-    success: "成功给予 %s"
-    failed: "给予金钱失败"
+      amount_positive: "§c金额必须为正数"
+    success: "§a成功给予 %s"
+    failed: "§c给予金钱失败"
   take:
     error:
-      amount_positive: "金额必须为正数"
-    success: "成功扣除 %s"
-    failed: "扣除金钱失败"
+      amount_positive: "§c金额必须为正数"
+    success: "§a成功扣除 %s"
+    failed: "§c扣除金钱失败"
   set:
     error:
-      amount_negative: "金额不能为负数"
-    success: "成功将余额设置为 %s"
-    failed: "设置余额失败"
+      amount_negative: "§c金额不能为负数"
+    success: "§a成功将余额设置为 %s"
+    failed: "§c设置余额失败"
   reload:
-    success: "成功重新加载消息和配置文件"
-    failed: "重新加载消息和配置文件失败"
+    success: "§a成功重新加载消息和配置文件"
+    failed: "§c重新加载消息和配置文件失败"
   general:
-    no_permission: "你没有权限使用此命令"
-    player_not_found: "找不到该玩家"
-    invalid_amount: "无效的金额"
-    command_usage: "命令用法错误"
+    no_permission: "§c你没有权限使用此命令"
+    player_not_found: "§c找不到该玩家"
+    invalid_amount: "§c无效的金额"
+    command_usage: "§c命令用法错误"
   usage:
-    eco: "用法：/eco <balance|pay|give|take|set|reload>"
-    give: "用法：/eco give <玩家> <金额>"
-    take: "用法：/eco take <玩家> <金额>"
-    set: "用法：/eco set <玩家> <金额>"
-    pay: "用法：/eco pay <玩家> <金额>"
+    eco: "§e用法：/eco §7<balance|pay|give|take|set|reload>"
+    give: "§e用法：/eco give <玩家> <金额>"
+    take: "§e用法：/eco take <玩家> <金额>"
+    set: "§e用法：/eco set <玩家> <金额>"
+    pay: "§e用法：/eco pay <玩家> <金额>"
   currency:
     name_singular: "元"
-    name_plural: "元" 
+    name_plural: "元"
