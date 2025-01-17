@@ -385,7 +385,7 @@ public class UniversalEconomyService {
         return CompletableFuture.supplyAsync(() -> {
             try (Connection conn = databaseManager.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT uuid FROM " + prefix + "accounts WHERE LOWER(username) = LOWER(?)")) {
+                     "SELECT uuid FROM " + prefix + "accounts WHERE LOWER(username) = LOWER(?) ORDER BY last_seen DESC LIMIT 1")) {
                 stmt.setString(1, username);
                 ResultSet rs = stmt.executeQuery();
                 if (rs.next()) {

@@ -104,7 +104,6 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
     }
 
     private void handleBalance(CommandSender sender, String[] args) {
-        UUID targetUuid;
         String[] adjustedArgs = args;
         
         // If command is used as /eco balance player, we need to skip the first argument
@@ -114,27 +113,31 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
         }
 
         if (adjustedArgs.length > 0 && sender.hasPermission("mcuniversaleconomy.admin")) {
-            Player target = Bukkit.getPlayer(adjustedArgs[0]);
-            if (target == null) {
-                sender.sendMessage(languageManager.getMessage("general.player_not_found"));
-                return;
-            }
-            targetUuid = target.getUniqueId();
+            String targetName = adjustedArgs[0];
+            economyService.getUuidByUsername(targetName)
+                .thenAccept(uuid -> {
+                    if (uuid == null) {
+                        Bukkit.getScheduler().runTask(plugin, () ->
+                            sender.sendMessage(languageManager.getMessage("general.player_not_found")));
+                        return;
+                    }
+                    economyCommand.balance(uuid)
+                        .thenAccept(message -> Bukkit.getScheduler().runTask(plugin, () ->
+                            sender.sendMessage(message)));
+                });
         } else if (sender instanceof Player) {
-            targetUuid = ((Player) sender).getUniqueId();
+            UUID playerUuid = ((Player) sender).getUniqueId();
+            economyCommand.balance(playerUuid)
+                .thenAccept(message -> Bukkit.getScheduler().runTask(plugin, () ->
+                    sender.sendMessage(message)));
         } else {
-            sender.sendMessage(languageManager.getMessage("balance.console_error"));
-            return;
+            sender.sendMessage(languageManager.getMessage("general.player_required"));
         }
-
-        economyCommand.balance(targetUuid)
-            .thenAccept(message -> Bukkit.getScheduler().runTask(plugin, () -> 
-                sender.sendMessage(message)));
     }
 
     private void handlePay(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(languageManager.getMessage("general.command_usage"));
+            sender.sendMessage(languageManager.getMessage("general.player_required"));
             return;
         }
 
