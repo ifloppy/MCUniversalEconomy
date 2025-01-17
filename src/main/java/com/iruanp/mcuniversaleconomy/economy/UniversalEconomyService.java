@@ -394,6 +394,24 @@ public class UniversalEconomyService {
         });
     }
 
+    public CompletableFuture<List<String>> getAllPlayerNames() {
+        return CompletableFuture.supplyAsync(() -> {
+            try (Connection conn = databaseManager.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT username FROM " + prefix + "accounts ORDER BY username")) {
+                ResultSet rs = stmt.executeQuery();
+                List<String> names = new ArrayList<>();
+                while (rs.next()) {
+                    names.add(rs.getString("username"));
+                }
+                return names;
+            } catch (SQLException e) {
+                logError("Failed to get all player names", e);
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
     private void logError(String message, Exception e) {
         logger.error(message, e);
     }

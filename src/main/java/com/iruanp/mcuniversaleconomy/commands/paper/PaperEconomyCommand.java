@@ -21,12 +21,14 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
     private final EconomyCommand economyCommand;
     private final LanguageManager languageManager;
     private final PaperNotificationService notificationService;
+    private final UniversalEconomyService economyService;
 
     public PaperEconomyCommand(MCUniversalEconomyPaper plugin, UniversalEconomyService economyService, LanguageManager languageManager, PaperNotificationService notificationService) {
         this.plugin = plugin;
         this.economyCommand = new EconomyCommand(economyService, languageManager, notificationService);
         this.languageManager = languageManager;
         this.notificationService = notificationService;
+        this.economyService = economyService;
     }
 
     public static void register(MCUniversalEconomyPaper plugin, UniversalEconomyService economyService, LanguageManager languageManager, PaperNotificationService notificationService) {
@@ -142,22 +144,28 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
         }
 
         Player player = (Player) sender;
-        Player target = Bukkit.getPlayer(args[1]);
-        if (target == null) {
-            sender.sendMessage(languageManager.getMessage("general.player_not_found"));
-            return;
-        }
-
-        if (player.equals(target)) {
-            sender.sendMessage(languageManager.getMessage("pay.error.self_pay"));
-            return;
-        }
+        String targetName = args[1];
 
         try {
             double amount = Double.parseDouble(args[2]);
-            economyCommand.pay(player.getUniqueId(), target.getUniqueId(), amount)
-                .thenAccept(message -> Bukkit.getScheduler().runTask(plugin, () -> 
-                    sender.sendMessage(message)));
+            economyService.getUuidByUsername(targetName)
+                .thenAccept(targetUuid -> {
+                    if (targetUuid == null) {
+                        Bukkit.getScheduler().runTask(plugin, () ->
+                            sender.sendMessage(languageManager.getMessage("general.player_not_found")));
+                        return;
+                    }
+
+                    if (player.getUniqueId().equals(targetUuid)) {
+                        Bukkit.getScheduler().runTask(plugin, () ->
+                            sender.sendMessage(languageManager.getMessage("pay.error.self_pay")));
+                        return;
+                    }
+
+                    economyCommand.pay(player.getUniqueId(), targetUuid, amount)
+                        .thenAccept(message -> Bukkit.getScheduler().runTask(plugin, () ->
+                            sender.sendMessage(message)));
+                });
         } catch (NumberFormatException e) {
             sender.sendMessage(languageManager.getMessage("general.invalid_amount"));
         }
@@ -174,17 +182,21 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        Player target = Bukkit.getPlayer(args[1]);
-        if (target == null) {
-            sender.sendMessage(languageManager.getMessage("general.player_not_found"));
-            return;
-        }
-
+        String targetName = args[1];
         try {
             double amount = Double.parseDouble(args[2]);
-            economyCommand.give(target.getUniqueId(), amount)
-                .thenAccept(message -> Bukkit.getScheduler().runTask(plugin, () -> 
-                    sender.sendMessage(message)));
+            economyService.getUuidByUsername(targetName)
+                .thenAccept(targetUuid -> {
+                    if (targetUuid == null) {
+                        Bukkit.getScheduler().runTask(plugin, () ->
+                            sender.sendMessage(languageManager.getMessage("general.player_not_found")));
+                        return;
+                    }
+
+                    economyCommand.give(targetUuid, amount)
+                        .thenAccept(message -> Bukkit.getScheduler().runTask(plugin, () ->
+                            sender.sendMessage(message)));
+                });
         } catch (NumberFormatException e) {
             sender.sendMessage(languageManager.getMessage("general.invalid_amount"));
         }
@@ -201,17 +213,21 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        Player target = Bukkit.getPlayer(args[1]);
-        if (target == null) {
-            sender.sendMessage(languageManager.getMessage("general.player_not_found"));
-            return;
-        }
-
+        String targetName = args[1];
         try {
             double amount = Double.parseDouble(args[2]);
-            economyCommand.take(target.getUniqueId(), amount)
-                .thenAccept(message -> Bukkit.getScheduler().runTask(plugin, () -> 
-                    sender.sendMessage(message)));
+            economyService.getUuidByUsername(targetName)
+                .thenAccept(targetUuid -> {
+                    if (targetUuid == null) {
+                        Bukkit.getScheduler().runTask(plugin, () ->
+                            sender.sendMessage(languageManager.getMessage("general.player_not_found")));
+                        return;
+                    }
+
+                    economyCommand.take(targetUuid, amount)
+                        .thenAccept(message -> Bukkit.getScheduler().runTask(plugin, () ->
+                            sender.sendMessage(message)));
+                });
         } catch (NumberFormatException e) {
             sender.sendMessage(languageManager.getMessage("general.invalid_amount"));
         }
@@ -228,17 +244,21 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        Player target = Bukkit.getPlayer(args[1]);
-        if (target == null) {
-            sender.sendMessage(languageManager.getMessage("general.player_not_found"));
-            return;
-        }
-
+        String targetName = args[1];
         try {
             double amount = Double.parseDouble(args[2]);
-            economyCommand.set(target.getUniqueId(), amount)
-                .thenAccept(message -> Bukkit.getScheduler().runTask(plugin, () -> 
-                    sender.sendMessage(message)));
+            economyService.getUuidByUsername(targetName)
+                .thenAccept(targetUuid -> {
+                    if (targetUuid == null) {
+                        Bukkit.getScheduler().runTask(plugin, () ->
+                            sender.sendMessage(languageManager.getMessage("general.player_not_found")));
+                        return;
+                    }
+
+                    economyCommand.set(targetUuid, amount)
+                        .thenAccept(message -> Bukkit.getScheduler().runTask(plugin, () ->
+                            sender.sendMessage(message)));
+                });
         } catch (NumberFormatException e) {
             sender.sendMessage(languageManager.getMessage("general.invalid_amount"));
         }
@@ -276,10 +296,17 @@ public class PaperEconomyCommand implements CommandExecutor, TabCompleter {
                 completions.add("give");
                 completions.add("take");
                 completions.add("set");
+                completions.add("reload");
             }
         } else if (args.length == 2) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                completions.add(player.getName());
+            // For all player-related commands, suggest all known player names from the database
+            if (args[0].equalsIgnoreCase("pay") || 
+                (sender.hasPermission("mcuniversaleconomy.admin") && 
+                (args[0].equalsIgnoreCase("give") || 
+                 args[0].equalsIgnoreCase("take") || 
+                 args[0].equalsIgnoreCase("set") ||
+                 args[0].equalsIgnoreCase("balance")))) {
+                economyService.getAllPlayerNames().join().forEach(completions::add);
             }
         }
 

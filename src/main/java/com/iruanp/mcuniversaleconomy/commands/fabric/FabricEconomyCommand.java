@@ -7,6 +7,7 @@ import com.iruanp.mcuniversaleconomy.notification.fabric.FabricNotificationPlaye
 import com.iruanp.mcuniversaleconomy.notification.fabric.FabricNotificationService;
 import com.iruanp.mcuniversaleconomy.database.DatabaseManager;
 import com.iruanp.mcuniversaleconomy.util.UnifiedLogger;
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -65,7 +66,7 @@ public class FabricEconomyCommand {
                     .executes(command::handleBalanceTop)
                 )
                 .then(literal("pay")
-                    .then(argument("player", EntityArgumentType.player())
+                    .then(argument("player", GameProfileArgumentType.gameProfile())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handlePay)
                         )
@@ -119,7 +120,7 @@ public class FabricEconomyCommand {
                     .executes(command::handleBalanceTop)
                 )
                 .then(literal("pay")
-                    .then(argument("player", EntityArgumentType.player())
+                    .then(argument("player", GameProfileArgumentType.gameProfile())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handlePay)
                         )
@@ -166,7 +167,7 @@ public class FabricEconomyCommand {
                     .executes(command::handleBalanceTop)
                 )
                 .then(literal("pay")
-                    .then(argument("player", EntityArgumentType.player())
+                    .then(argument("player", GameProfileArgumentType.gameProfile())
                         .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                             .executes(command::handlePay)
                         )
@@ -221,7 +222,7 @@ public class FabricEconomyCommand {
             // Register pay command alias
             final var payCommand = literal("pay")
                 .requires(source -> source.hasPermissionLevel(4) || Permissions.check(source, "mcuniversaleconomy.use", true))
-                .then(argument("player", EntityArgumentType.player())
+                .then(argument("player", GameProfileArgumentType.gameProfile())
                     .then(argument("amount", DoubleArgumentType.doubleArg(0.0))
                         .executes(command::handlePay)
                     )
@@ -312,43 +313,26 @@ public class FabricEconomyCommand {
         ServerCommandSource source = ctx.getSource();
         try {
             ServerPlayerEntity player = source.getPlayerOrThrow();
-            String targetName;
-            try {
-                // Try to get online player first
-                ServerPlayerEntity onlineTarget = EntityArgumentType.getPlayer(ctx, "player");
-                if (player.equals(onlineTarget)) {
-                    source.sendMessage(Text.literal(languageManager.getMessage("pay.error.self_pay")));
-                    return 0;
-                }
-                economyCommand.pay(player.getUuid(), onlineTarget.getUuid(), DoubleArgumentType.getDouble(ctx, "amount"))
-                    .thenAccept(message -> source.sendMessage(Text.literal(message)));
-                return Command.SINGLE_SUCCESS;
-            } catch (CommandSyntaxException e) {
-                // If online player not found, try to get the name from the failed argument
-                targetName = ctx.getInput().split(" ")[2]; // Get the name from command input
+            Collection<GameProfile> profiles = GameProfileArgumentType.getProfileArgument(ctx, "player");
+            if (profiles.isEmpty()) {
+                source.sendMessage(Text.literal(languageManager.getMessage("general.player_not_found")));
+                return 0;
+            }
+            GameProfile targetProfile = profiles.iterator().next();
+            UUID targetUuid = targetProfile.getId();
+
+            if (player.getUuid().equals(targetUuid)) {
+                source.sendMessage(Text.literal(languageManager.getMessage("pay.error.self_pay")));
+                return 0;
             }
 
-            // If we reach here, try offline player lookup
-            double amount = DoubleArgumentType.getDouble(ctx, "amount");
-            economyService.getUuidByUsername(targetName)
-                .thenCompose(targetUuid -> {
-                    if (targetUuid == null) {
-                        source.sendMessage(Text.literal(languageManager.getMessage("general.player_not_found")));
-                        return CompletableFuture.completedFuture(null);
-                    }
-
-                    if (player.getUuid().equals(targetUuid)) {
-                        source.sendMessage(Text.literal(languageManager.getMessage("pay.error.self_pay")));
-                        return CompletableFuture.completedFuture(null);
-                    }
-
-                    return economyCommand.pay(player.getUuid(), targetUuid, amount)
-                        .thenAccept(message -> source.sendMessage(Text.literal(message)));
-                });
+            economyCommand.pay(player.getUuid(), targetUuid, DoubleArgumentType.getDouble(ctx, "amount"))
+                .thenAccept(message -> source.sendMessage(Text.literal(message)));
 
             return Command.SINGLE_SUCCESS;
         } catch (Exception e) {
-            source.sendMessage(Text.literal(languageManager.getMessage("general.command_usage")));
+            source.sendMessage(Text.literal(languageManager.getMessage("general.command_error")));
+            logger.error("Error executing pay command", e);
             return 0;
         }
     }
