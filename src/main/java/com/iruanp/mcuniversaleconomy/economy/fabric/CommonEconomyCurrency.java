@@ -38,7 +38,7 @@ public class CommonEconomyCurrency implements EconomyCurrency {
 
     @Override
     public Identifier id() {
-        return new Identifier(provider.id(), "default_currency");
+        return Identifier.of(provider.id(), "default_currency");
     }
 
     @Override
