@@ -41,7 +41,9 @@ public class MCUniversalEconomyFabric implements ModInitializer {
         languageManager = new LanguageManager(FabricLoader.getInstance().getConfigDir().resolve("mcuniversaleconomy").toFile(), config.getLanguage());
 
         // Initialize economy service
-        economyService = new UniversalEconomyService(databaseManager, logger, config, languageManager);
+        // Initialize economy service
+        UniversalEconomyService.initialize(databaseManager, logger, config, languageManager);
+        economyService = UniversalEconomyService.getInstance();
 
         // Register Common Economy API provider
         CommonEconomyProvider provider = new CommonEconomyProvider(economyService, config);
@@ -91,10 +93,6 @@ public class MCUniversalEconomyFabric implements ModInitializer {
 
     public static ModConfig getConfig() {
         return config;
-    }
-
-    public static UniversalEconomyService getEconomyService() {
-        return economyService;
     }
 
     public static DatabaseManager getDatabaseManager() {

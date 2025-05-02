@@ -39,7 +39,8 @@ public class MCUniversalEconomyPaper extends JavaPlugin implements Listener {
         languageManager = new LanguageManager(getDataFolder(), config.getLanguage());
 
         // Initialize economy service
-        economyService = new UniversalEconomyService(databaseManager, logger, config, languageManager);
+        UniversalEconomyService.initialize(databaseManager, logger, config, languageManager);
+        economyService = UniversalEconomyService.getInstance();
         
         // Create notification service
         notificationService = new PaperNotificationService(databaseManager, logger);
@@ -102,4 +103,4 @@ public class MCUniversalEconomyPaper extends JavaPlugin implements Listener {
     public static DatabaseManager getDatabaseManager() {
         return databaseManager;
     }
-} 
+}
