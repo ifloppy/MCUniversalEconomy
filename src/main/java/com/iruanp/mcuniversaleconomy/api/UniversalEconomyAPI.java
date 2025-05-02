@@ -25,7 +25,7 @@ public interface UniversalEconomyAPI {
      * @param amount The amount to set
      * @return true if successful, false otherwise
      */
-    CompletableFuture<Boolean> setBalance(UUID playerUUID, double amount);
+    CompletableFuture<Boolean> setBalance(UUID playerUUID, BigDecimal amount);
 
     /**
      * Adds an amount to a player's balance.
@@ -34,7 +34,7 @@ public interface UniversalEconomyAPI {
      * @param amount The amount to add
      * @return true if successful, false otherwise
      */
-    CompletableFuture<Boolean> depositPlayer(UUID playerUUID, double amount);
+    CompletableFuture<Boolean> depositPlayer(UUID playerUUID, BigDecimal amount);
 
     /**
      * Subtracts an amount from a player's balance.
@@ -43,7 +43,7 @@ public interface UniversalEconomyAPI {
      * @param amount The amount to subtract
      * @return true if successful, false otherwise
      */
-    CompletableFuture<Boolean> withdrawPlayer(UUID playerUUID, double amount);
+    CompletableFuture<Boolean> withdrawPlayer(UUID playerUUID, BigDecimal amount);
 
     /**
      * Transfers an amount from one player to another.
@@ -53,7 +53,7 @@ public interface UniversalEconomyAPI {
      * @param amount The amount to transfer
      * @return A CompletableFuture containing the TransactionResult
      */
-    CompletableFuture<com.iruanp.mcuniversaleconomy.economy.TransactionResult> transferMoney(UUID fromUUID, UUID toUUID, double amount);
+    CompletableFuture<com.iruanp.mcuniversaleconomy.economy.TransactionResult> transferMoney(UUID fromUUID, UUID toUUID, BigDecimal amount);
 
     /**
      * Checks if a player has at least the specified amount.
@@ -62,7 +62,7 @@ public interface UniversalEconomyAPI {
      * @param amount The amount to check
      * @return true if the player has enough money, false otherwise
      */
-    CompletableFuture<Boolean> hasEnough(UUID playerUUID, double amount);
+    CompletableFuture<Boolean> hasEnough(UUID playerUUID, BigDecimal amount);
 
     /**
      * Gets the currency symbol used by the economy.
@@ -77,5 +77,5 @@ public interface UniversalEconomyAPI {
      * @param amount The amount to format
      * @return The formatted amount string
      */
-    String formatAmount(double amount);
+    String formatAmount(BigDecimal amount);
 }

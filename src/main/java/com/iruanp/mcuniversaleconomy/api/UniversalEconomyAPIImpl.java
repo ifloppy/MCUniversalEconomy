@@ -24,29 +24,29 @@ public class UniversalEconomyAPIImpl implements UniversalEconomyAPI {
     }
 
     @Override
-    public CompletableFuture<Boolean> setBalance(UUID playerUUID, double amount) {
-        return economyService.setBalance(playerUUID, BigDecimal.valueOf(amount));
+    public CompletableFuture<Boolean> setBalance(UUID playerUUID, BigDecimal amount) {
+        return economyService.setBalance(playerUUID, amount);
     }
 
     @Override
-    public CompletableFuture<Boolean> depositPlayer(UUID playerUUID, double amount) {
-        return economyService.addBalance(playerUUID, BigDecimal.valueOf(amount));
+    public CompletableFuture<Boolean> depositPlayer(UUID playerUUID, BigDecimal amount) {
+        return economyService.addBalance(playerUUID, amount);
     }
 
     @Override
-    public CompletableFuture<Boolean> withdrawPlayer(UUID playerUUID, double amount) {
-        return economyService.subtractBalance(playerUUID, BigDecimal.valueOf(amount));
+    public CompletableFuture<Boolean> withdrawPlayer(UUID playerUUID, BigDecimal amount) {
+        return economyService.subtractBalance(playerUUID, amount);
     }
 
     @Override
-    public CompletableFuture<TransactionResult> transferMoney(UUID fromUUID, UUID toUUID, double amount) {
-        return economyService.transfer(fromUUID, toUUID, BigDecimal.valueOf(amount));
+    public CompletableFuture<TransactionResult> transferMoney(UUID fromUUID, UUID toUUID, BigDecimal amount) {
+        return economyService.transfer(fromUUID, toUUID, amount);
     }
 
     @Override
-    public CompletableFuture<Boolean> hasEnough(UUID playerUUID, double amount) {
+    public CompletableFuture<Boolean> hasEnough(UUID playerUUID, BigDecimal amount) {
         return getBalance(playerUUID)
-            .thenApply(balance -> balance.compareTo(BigDecimal.valueOf(amount)) >= 0);
+            .thenApply(balance -> balance.compareTo(amount) >= 0);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class UniversalEconomyAPIImpl implements UniversalEconomyAPI {
     }
 
     @Override
-    public String formatAmount(double amount) {
+    public String formatAmount(BigDecimal amount) {
         String format = economyService.getConfig().getCurrencyFormat();
         java.text.DecimalFormat decimalFormat = new java.text.DecimalFormat(format);
         return getCurrencySymbol() + decimalFormat.format(amount);
