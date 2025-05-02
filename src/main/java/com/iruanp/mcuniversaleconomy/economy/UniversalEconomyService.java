@@ -18,6 +18,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 
 public class UniversalEconomyService {
+    private static volatile UniversalEconomyService instance;
     private final DatabaseManager databaseManager;
     private final UnifiedLogger logger;
     private final String prefix;
@@ -30,6 +31,28 @@ public class UniversalEconomyService {
         this.prefix = config.getTablePrefix();
         this.config = config;
         this.languageManager = languageManager;
+    }
+
+    public static UniversalEconomyService getInstance() {
+        if (instance == null) {
+            synchronized (UniversalEconomyService.class) {
+                if (instance == null) {
+                    // You may need to provide actual dependencies here
+                    throw new IllegalStateException("UniversalEconomyService instance not initialized. Please initialize with dependencies first.");
+                }
+            }
+        }
+        return instance;
+    }
+
+    public static void initialize(DatabaseManager databaseManager, UnifiedLogger logger, ModConfig config, LanguageManager languageManager) {
+        if (instance == null) {
+            synchronized (UniversalEconomyService.class) {
+                if (instance == null) {
+                    instance = new UniversalEconomyService(databaseManager, logger, config, languageManager);
+                }
+            }
+        }
     }
 
     public CompletableFuture<BigDecimal> getBalance(UUID playerUuid) {
@@ -441,4 +464,4 @@ public class UniversalEconomyService {
     public ModConfig getConfig() {
         return config;
     }
-} 
+}
