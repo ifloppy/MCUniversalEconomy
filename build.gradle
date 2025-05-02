@@ -135,3 +135,7 @@ publishing {
 		}
 	}
 }
+
+tasks.withType(PublishToMavenLocal).configureEach {
+	dependsOn remapJar
+}
